@@ -70,315 +70,315 @@
     "tags": ["elasticsearch", "cluster", "shards", "observability"]
   },
   {
-    "id": "grafana-datasource-error",
-    "title": "Grafana dashboards showing no data due to datasource errors",
+    "id": "prometheus-scrape-fail",
+    "title": "Prometheus failing to scrape metrics from targets",
+    "tool": "Prometheus",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 79,
+    "symptoms": [
+      "Prometheus UI showing targets as down",
+      "No metrics data for specific services",
+      "Scrape errors in Prometheus logs",
+      "Metrics gaps in time series data"
+    ],
+    "root_cause": [
+      "Target endpoint not reachable from Prometheus",
+      "Scrape interval too short causing timeouts",
+      "TLS certificate issues with HTTPS targets",
+      "Service discovery not finding targets"
+    ],
+    "diagnosis": [
+      "Check Prometheus targets page for scrape status",
+      "Review Prometheus logs for scrape errors",
+      "Test target endpoint accessibility from Prometheus",
+      "Verify service discovery configuration"
+    ],
+    "fix": [
+      "Fix network connectivity between Prometheus and targets",
+      "Increase scrape timeout in configuration",
+      "Configure TLS for HTTPS targets",
+      "Fix service discovery configuration or use static targets"
+    ],
+    "prevention": [
+      "Monitor scrape success rate and set up alerts",
+      "Test target endpoints before adding to Prometheus",
+      "Use appropriate scrape intervals for different targets",
+      "Implement health checks for targets"
+    ],
+    "tags": ["prometheus", "metrics", "scraping", "monitoring"]
+  },
+  {
+    "id": "grafana-dashboard-load",
+    "title": "Grafana dashboards loading slowly or timing out",
     "tool": "Grafana",
     "category": "Observability",
     "severity": "P2",
-    "popularity": 72,
+    "popularity": 74,
     "symptoms": [
-      "Dashboards display 'No data' or 'Datasource error' messages",
-      "Queries in query editor fail with connection errors",
-      "Datasource test shows successful connection but queries fail",
-      "Some panels work while others show errors"
+      "Dashboard panels taking long time to load",
+      "Queries timing out in Grafana",
+      "Browser showing slow dashboard load times",
+      "High CPU/memory usage on Grafana server"
     ],
     "root_cause": [
-      "Datasource authentication credentials expired or invalid",
-      "Datasource endpoint changed or unreachable",
-      "Query syntax incompatible with datasource version",
-      "Timeout settings too short for complex queries"
+      "Complex queries with large time ranges",
+      "Too many panels on single dashboard",
+      "Datasource response time slow",
+      "Grafana server under-provisioned"
     ],
     "diagnosis": [
-      "Check datasource configuration in Grafana",
-      "Test datasource connection from Grafana UI",
-      "Review datasource logs for error messages",
-      "Test query directly against datasource"
+      "Check Grafana performance metrics",
+      "Review query inspector for slow queries",
+      "Monitor datasource response times",
+      "Check Grafana server resource usage"
     ],
     "fix": [
-      "Update datasource credentials and connection details",
-      "Verify datasource endpoint is accessible from Grafana",
-      "Fix query syntax to match datasource API version",
-      "Increase query timeout settings in datasource configuration"
+      "Optimize dashboard queries with better time ranges",
+      "Reduce number of panels or split into multiple dashboards",
+      "Add query caching",
+      "Scale Grafana server resources"
     ],
     "prevention": [
-      "Monitor datasource health and set up alerts",
-      "Use environment variables for sensitive credentials",
-      "Test dashboards after datasource updates",
-      "Document datasource configuration and query patterns"
+      "Follow dashboard design best practices",
+      "Limit panels per dashboard",
+      "Use query optimization techniques",
+      "Monitor Grafana performance metrics"
     ],
-    "tags": ["grafana", "dashboards", "datasource", "monitoring"]
+    "tags": ["grafana", "dashboards", "performance", "monitoring"]
   },
   {
-    "id": "loki-rate-limit",
-    "title": "Loki logs being dropped due to ingestion rate limits",
-    "tool": "Loki",
+    "id": "logstash-pipeline-block",
+    "title": "Logstash pipeline blocked causing log processing delays",
+    "tool": "Logstash",
     "category": "Observability",
     "severity": "P2",
-    "popularity": 58,
+    "popularity": 68,
     "symptoms": [
-      "Missing log lines in Loki queries",
-      "Promtail logs showing rate limit errors",
-      "Loki metrics showing dropped log entries",
-      "Recent logs not appearing in Grafana"
+      "Logs not appearing in Elasticsearch with delay",
+      "Logstash showing backpressure",
+      "Pipeline queue filling up",
+      "Increased log processing latency"
     ],
     "root_cause": [
-      "Ingestion rate limit exceeded due to log volume spike",
-      "Stream limits too low for number of log streams",
-      "Burst rate limit too small for log patterns",
-      "Unstructured logs creating too many unique streams"
+      "Elasticsearch cluster slow or unresponsive",
+      "Logstash filters too complex causing processing delays",
+      "Insufficient Logstash worker threads",
+      "Network issues between Logstash and Elasticsearch"
     ],
     "diagnosis": [
-      "Check Loki metrics for rate limit violations",
-      "Review Promtail logs for ingestion errors",
-      "Monitor number of active streams",
-      "Analyze log volume patterns"
+      "Check Logstash pipeline stats API",
+      "Review Elasticsearch cluster health",
+      "Monitor Logstash JVM heap usage",
+      "Check network connectivity to Elasticsearch"
     ],
     "fix": [
-      "Increase ingestion rate limit in Loki configuration",
-      "Adjust stream limits to accommodate workload",
-      "Implement log sampling or filtering to reduce volume",
-      "Use structured logging to reduce stream cardinality"
+      "Optimize or simplify Logstash filters",
+      "Increase worker threads and batch sizes",
+      "Scale Elasticsearch cluster",
+      "Fix network connectivity issues"
     ],
     "prevention": [
-      "Monitor log volume and adjust limits proactively",
-      "Implement structured logging with consistent labels",
-      "Use log aggregation and filtering at source",
-      "Set up alerts for rate limit violations"
+      "Monitor pipeline metrics and queue sizes",
+      "Right-size Logstash based on log volume",
+      "Use message queues for buffering",
+      "Implement pipeline health checks"
     ],
-    "tags": ["loki", "logging", "rate-limit", "promtail"]
+    "tags": ["logstash", "elk", "pipeline", "logging"]
   },
   {
-    "id": "tempo-trace-missing",
-    "title": "Traces not appearing in Tempo despite application instrumentation",
-    "tool": "Tempo",
+    "id": "kibana-space-error",
+    "title": "Kibana unable to connect to Elasticsearch cluster",
+    "tool": "Kibana",
     "category": "Observability",
-    "severity": "P3",
-    "popularity": 52,
+    "severity": "P1",
+    "popularity": 73,
     "symptoms": [
-      "Application sends traces but Tempo shows no data",
-      "Tempo UI displays 'No traces found' for queries",
-      "Trace ID exists in application but not searchable",
-      "Intermittent trace loss affecting some services"
+      "Kibana showing 'Kibana server is not ready' error",
+      "Unable to create index patterns",
+      "Discover page not loading data",
+      "Kibana UI unresponsive"
     ],
     "root_cause": [
-      "Tempo ingestion endpoint not reachable from application",
-      "Trace sampling rate too low causing traces to be dropped",
-      "Batch size or timeout settings misconfigured",
-      "Tempo storage backend having issues"
-    ],
-    "diagnosis": [
-      "Check Tempo ingestion metrics and logs",
-      "Verify application trace exporter configuration",
-      "Test network connectivity to Tempo endpoint",
-      "Review Tempo storage backend health"
-    ],
-    "fix": [
-      "Fix network connectivity to Tempo ingestion endpoint",
-      "Increase trace sampling rate in application configuration",
-      "Adjust batch size and timeout settings in trace exporter",
-      "Check and fix Tempo storage backend issues"
-    ],
-    "prevention": [
-      "Monitor Tempo ingestion metrics and set up alerts",
-      "Test trace export during application deployment",
-      "Document trace exporter configuration",
-      "Use appropriate sampling rates for production workload"
-    ],
-    "tags": ["tempo", "tracing", "observability", "monitoring"]
-  },
-  {
-    "id": "alertmanager-silence",
-    "title": "Alertmanager not firing alerts due to incorrect silence configuration",
-    "tool": "Alertmanager",
-    "category": "Observability",
-    "severity": "P2",
-    "popularity": 61,
-    "symptoms": [
-      "Critical alerts not being sent despite trigger conditions met",
-      "Alerts showing in Prometheus but not in Alertmanager",
-      "Silences blocking alerts unexpectedly",
-      "Alert routing not working as expected"
-    ],
-    "root_cause": [
-      "Silence rules too broad matching all alerts",
-      "Silence not expired after maintenance window",
-      "Alert routing configuration incorrect",
-      "Receiver configuration missing or misconfigured"
-    ],
-    "diagnosis": [
-      "Check active silences in Alertmanager UI",
-      "Review alert routing tree configuration",
-      "Verify receiver configurations",
-      "Check Alertmanager logs for routing decisions"
-    ],
-    "fix": [
-      "Remove or update overly broad silence rules",
-      "Set proper expiry times for maintenance silences",
-      "Fix alert routing configuration",
-      "Verify and test receiver configurations"
-    ],
-    "prevention": [
-      "Use specific matchers in silence rules",
-      "Document silence procedures and expiry policies",
-      "Test alert routing after configuration changes",
-      "Implement alert management best practices"
-    ],
-    "tags": ["alertmanager", "alerts", "routing", "monitoring"]
-  },
-  {
-    "id": "jaeger-collector-down",
-    "title": "Jaeger collector not receiving spans from agents",
-    "tool": "Jaeger",
-    "category": "Observability",
-    "severity": "P2",
-    "popularity": 54,
-    "symptoms": [
-      "Jaeger UI showing no traces despite application sending spans",
-      "Agent logs showing connection failures to collector",
-      "Collector metrics showing zero span ingestion",
-      "Traces available locally but not in centralized Jaeger"
-    ],
-    "root_cause": [
-      "Collector service not running or crashed",
-      "Network connectivity between agents and collector blocked",
-      "Collector endpoint misconfigured in agents",
-      "Collector overwhelmed by span volume"
-    ],
-    "diagnosis": [
-      "Check collector service status and logs",
-      "Verify network connectivity from agents to collector",
-      "Review agent configuration for collector endpoint",
-      "Monitor collector resource usage"
-    ],
-    "fix": [
-      "Restart or fix Jaeger collector service",
-      "Fix network connectivity between agents and collector",
-      "Update agent configuration with correct collector endpoint",
-      "Scale collector resources to handle span volume"
-    ],
-    "prevention": [
-      "Monitor collector health and set up alerts",
-      "Implement collector high availability",
-      "Test connectivity after infrastructure changes",
-      "Document collector deployment and configuration"
-    ],
-    "tags": ["jaeger", "tracing", "collector", "observability"]
-  },
-  {
-    "id": "vector-buffer-overflow",
-    "title": "Vector log pipeline dropping events due to buffer overflow",
-    "tool": "Vector",
-    "category": "Observability",
-    "severity": "P2",
-    "popularity": 49,
-    "symptoms": [
-      "Missing log events in output destinations",
-      "Vector metrics showing buffer overflow events",
-      "Log loss during traffic spikes",
-      "Backpressure causing source slowdown"
-    ],
-    "root_cause": [
-      "Buffer size too small for incoming event rate",
-      "Output sink slower than input source",
-      "Network issues blocking output delivery",
-      "CPU or memory limitations on Vector instance"
-    ],
-    "diagnosis": [
-      "Check Vector metrics for buffer usage and overflow",
-      "Monitor event throughput rates",
-      "Review sink connectivity and performance",
-      "Check Vector resource utilization"
-    ],
-    "fix": [
-      "Increase buffer size in Vector configuration",
-      "Optimize sink performance or add capacity",
-      "Implement batching and compression in sinks",
-      "Scale Vector resources or add more instances"
-    ],
-    "prevention": [
-      "Monitor buffer usage and set up alerts",
-      "Right-size buffers based on expected throughput",
-      "Implement load testing for log pipelines",
-      "Use disk-based buffers for durability"
-    ],
-    "tags": ["vector", "logging", "buffer", "pipeline"]
-  },
-  {
-    "id": "thanos-compaction",
-    "title": "Thanos compaction falling behind causing query performance degradation",
-    "tool": "Thanos",
-    "category": "Observability",
-    "severity": "P2",
-    "popularity": 51,
-    "symptoms": [
-      "Thanos Store API queries becoming slow",
-      "Compaction lag metrics showing increasing delay",
-      "High object storage API costs due to uncompacted data",
-      "Query timeouts for long time ranges"
-    ],
-    "root_cause": [
-      "Compaction resources insufficient for data volume",
-      "Compaction interval too long for data growth rate",
-      "Compaction job not running or failing",
-      "Object storage throttling compaction operations"
-    ],
-    "diagnosis": [
-      "Check Thanos compactor metrics and logs",
-      "Monitor compaction lag in Thanos UI",
-      "Review object storage API metrics",
-      "Verify compaction job schedule"
-    ],
-    "fix": [
-      "Scale compactor resources to handle data volume",
-      "Reduce compaction interval for more frequent runs",
-      "Fix compaction job issues and restart if needed",
-      "Optimize object storage configuration for compaction workload"
-    ],
-    "prevention": [
-      "Monitor compaction lag and set up alerts",
-      "Right-size compactor based on data growth",
-      "Test compaction configuration in staging",
-      "Document compaction strategy and retention policies"
-    ],
-    "tags": ["thanos", "prometheus", "compaction", "storage"]
-  },
-  {
-    "id": "opentelemetry-export",
-    "title": "OpenTelemetry exporter failing to send telemetry to backend",
-    "tool": "OpenTelemetry",
-    "category": "Observability",
-    "severity": "P2",
-    "popularity": 57,
-    "symptoms": [
-      "Application metrics not appearing in backend",
-      "OTel collector logs showing export failures",
-      "Telemetry data loss during transmission",
-      "High memory usage in OTel SDK due to batching"
-    ],
-    "root_cause": [
-      "Exporter endpoint unreachable or misconfigured",
+      "Elasticsearch cluster down or unreachable",
+      "Incorrect Elasticsearch URL in Kibana configuration",
       "Authentication credentials invalid or expired",
-      "Batch size too large causing rejections",
-      "Network issues blocking telemetry transmission"
+      "Kibana version incompatible with Elasticsearch"
     ],
     "diagnosis": [
-      "Check OTel exporter configuration",
-      "Review collector logs for export errors",
-      "Test connectivity to backend endpoint",
-      "Monitor SDK metrics for export failures"
+      "Check Kibana logs for connection errors",
+      "Verify Elasticsearch cluster health",
+      "Review Kibana configuration",
+      "Test Elasticsearch connectivity from Kibana host"
     ],
     "fix": [
-      "Fix exporter endpoint configuration",
+      "Fix Elasticsearch cluster issues",
+      "Update Kibana configuration with correct Elasticsearch URL",
       "Update authentication credentials",
-      "Adjust batch size and timeout settings",
-      "Implement retry logic and backoff in exporter"
+      "Upgrade Kibana to match Elasticsearch version"
     ],
     "prevention": [
-      "Monitor exporter success rate and set up alerts",
-      "Test telemetry export during deployment",
-      "Use environment variables for endpoint configuration",
-      "Implement circuit breaker for failing backends"
+      "Monitor Elasticsearch cluster health",
+      "Use version-compatible ELK stack",
+      "Implement credential rotation",
+      "Set up alerts for Kibana-Elasticsearch connectivity"
     ],
-    "tags": ["opentelemetry", "telemetry", "exporter", "monitoring"]
+    "tags": ["kibana", "elasticsearch", "elk", "monitoring"]
+  },
+  {
+    "id": "filebeat-registry",
+    "title": "Filebeat not sending logs due to registry file corruption",
+    "tool": "Filebeat",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 62,
+    "symptoms": [
+      "Logs not appearing in Logstash/Elasticsearch",
+      "Filebeat logs showing registry errors",
+      "Filebeat process using high CPU",
+      "Log duplication after Filebeat restart"
+    ],
+    "root_cause": [
+      "Registry file corrupted or locked",
+      "Disk full preventing registry writes",
+      "Filebeat configuration errors",
+      "Registry file permissions incorrect"
+    ],
+    "diagnosis": [
+      "Check Filebeat logs for registry errors",
+      "Review registry file contents",
+      "Check disk space on Filebeat host",
+      "Verify Filebeat configuration"
+    ],
+    "fix": [
+      "Stop Filebeat and remove corrupted registry file",
+      "Free up disk space",
+      "Fix Filebeat configuration",
+      "Fix registry file permissions"
+    ],
+    "prevention": [
+      "Monitor Filebeat registry file size",
+      "Use appropriate disk space for registry",
+      "Implement Filebeat configuration validation",
+      "Regularly backup registry file"
+    ],
+    "tags": ["filebeat", "elk", "logging", "beats"]
+  },
+  {
+    "id": "prometheus-storage",
+    "title": "Prometheus TSDB running out of disk space",
+    "tool": "Prometheus",
+    "category": "Observability",
+    "severity": "P1",
+    "popularity": 77,
+    "symptoms": [
+      "Prometheus unable to write samples",
+      "TSDB storage full errors in logs",
+      "Metrics not being persisted",
+      "Prometheus crashing or restarting"
+    ],
+    "root_cause": [
+      "Retention period too long for available disk",
+      "High cardinality metrics consuming excessive space",
+      "Insufficient disk space allocated",
+      "Metrics volume higher than expected"
+    ],
+    "diagnosis": [
+      "Check Prometheus TSDB size",
+      "Monitor disk usage on Prometheus host",
+      "Review metrics cardinality",
+      "Check retention configuration"
+    ],
+    "fix": [
+      "Reduce retention period in Prometheus configuration",
+      "Drop high cardinality metrics",
+      "Add more disk space to Prometheus host",
+      "Implement remote storage for long-term retention"
+    ],
+    "prevention": [
+      "Monitor disk usage and set alerts",
+      "Implement metric cardinality limits",
+      "Use appropriate retention periods",
+      "Consider remote storage for large metric volumes"
+    ],
+    "tags": ["prometheus", "storage", "tsdb", "monitoring"]
+  },
+  {
+    "id": "fluentd-buffer",
+    "title": "Fluentd buffer overflow causing log loss",
+    "tool": "Fluentd",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 60,
+    "symptoms": [
+      "Logs missing in destination",
+      "Fluentd logs showing buffer overflow",
+      "High memory usage by Fluentd",
+      "Log processing delays"
+    ],
+    "root_cause": [
+      "Buffer size too small for log volume",
+      "Output destination slow or unavailable",
+      "Fluentd workers insufficient",
+      "Network issues blocking log shipping"
+    ],
+    "diagnosis": [
+      "Check Fluentd logs for buffer errors",
+      "Monitor buffer usage metrics",
+      "Review output destination health",
+      "Check network connectivity"
+    ],
+    "fix": [
+      "Increase buffer size in Fluentd configuration",
+      "Scale output destination capacity",
+      "Increase Fluentd worker count",
+      "Implement retry and backoff strategies"
+    ],
+    "prevention": [
+      "Monitor buffer usage and set alerts",
+      "Right-size buffers based on log volume",
+      "Use disk-based buffers for durability",
+      "Implement output destination monitoring"
+    ],
+    "tags": ["fluentd", "logging", "buffer", "elk"]
+  },
+  {
+    "id": "elasticsearch-index",
+    "title": "Elasticsearch index creation failing due to mapping errors",
+    "tool": "Elasticsearch",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 65,
+    "symptoms": [
+      "Index creation returning mapping errors",
+      "Documents failing to index",
+      "Field mapping conflicts",
+      "Index templates not applying correctly"
+    ],
+    "root_cause": [
+      "Field type conflicts in mapping",
+      "Index template mapping incorrect",
+      "Dynamic mapping creating wrong field types",
+      "Index settings incompatible with data"
+    ],
+    "diagnosis": [
+      "Check index mapping: GET <index>/_mapping",
+      "Review index template configuration",
+      "Examine index creation errors",
+      "Test mapping with sample documents"
+    ],
+    "fix": [
+      "Update index mapping to correct field types",
+      "Fix index template configuration",
+      "Disable dynamic mapping or use strict mapping",
+      "Reindex data with correct mapping"
+    ],
+    "prevention": [
+      "Define explicit mappings for indices",
+      "Test mappings before production",
+      "Use index lifecycle management",
+      "Document mapping standards"
+    ],
+    "tags": ["elasticsearch", "mapping", "index", "elk"]
   }
 ]

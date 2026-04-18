@@ -70,315 +70,315 @@
     "tags": ["github-actions", "ci", "secrets", "security", "oidc"]
   },
   {
-    "id": "gitlab-runner-stuck",
-    "title": "GitLab CI runners become stuck and unresponsive during pipeline execution",
-    "tool": "GitLab CI",
-    "category": "CI/CD",
-    "severity": "P2",
-    "popularity": 61,
-    "symptoms": [
-      "Pipeline jobs show 'running' status for hours without progress",
-      "Runner logs show no activity or output",
-      "New jobs queue up but never start",
-      "Manual cancellation of stuck jobs fails"
-    ],
-    "root_cause": [
-      "Runner process deadlocked waiting for external resource",
-      "Docker daemon on runner host unresponsive",
-      "Runner configuration has concurrent job limit too high",
-      "Network connectivity issue between runner and GitLab server"
-    ],
-    "diagnosis": [
-      "Check runner status in GitLab admin interface",
-      "Review runner logs: journalctl -u gitlab-runner",
-      "Inspect Docker daemon status: systemctl status docker",
-      "Test connectivity: curl -I https://gitlab.example.com"
-    ],
-    "fix": [
-      "Restart the GitLab runner service: systemctl restart gitlab-runner",
-      "Clear runner cache: gitlab-runner verify",
-      "Reduce concurrent job limit in config.toml",
-      "Restart Docker daemon if unresponsive"
-    ],
-    "prevention": [
-      "Set job timeouts in .gitlab-ci.yml",
-      "Monitor runner resource usage with Prometheus",
-      "Use autoscaling runners for variable workloads",
-      "Implement health checks for runner infrastructure"
-    ],
-    "tags": ["gitlab", "ci", "runners", "debugging", "docker"]
-  },
-  {
-    "id": "circleci-timeout",
-    "title": "CircleCI jobs timing out despite sufficient time allocated",
-    "tool": "CircleCI",
-    "category": "CI/CD",
-    "severity": "P2",
-    "popularity": 59,
-    "symptoms": [
-      "Jobs fail with 'no output received' error after 10 minutes",
-      "Tests run locally but fail in CircleCI environment",
-      "Timeout occurs at different points in each run",
-      "Increasing timeout in config does not resolve issue"
-    ],
-    "root_cause": [
-      "Command hanging without producing output",
-      "Infinite loop or waiting condition in test code",
-      "Resource exhaustion causing process freeze",
-      "Network dependency with no timeout configured"
-    ],
-    "diagnosis": [
-      "Review job logs to identify where execution stops",
-      "Check for hanging processes in SSH debug session",
-      "Monitor resource usage during job execution",
-      "Test command locally with same dependencies"
-    ],
-    "fix": [
-      "Add explicit timeouts to network requests and external commands",
-      "Implement output logging to prevent 'no output' timeout",
-      "Add progress indicators for long-running operations",
-      "Use CircleCI CLI to reproduce locally: circleci local execute"
-    ],
-    "prevention": [
-      "Add timeout to each step in config.yml",
-      "Implement test timeouts at the test framework level",
-      "Use resource classes with adequate CPU and memory",
-      "Add integration tests for CI configuration"
-    ],
-    "tags": ["circleci", "ci", "timeout", "debugging"]
-  },
-  {
-    "id": "argo-workflow-failed",
-    "title": "Argo Workflows stuck in failed state with retry exhaustion",
-    "tool": "Argo Workflows",
-    "category": "CI/CD",
-    "severity": "P2",
-    "popularity": 56,
-    "symptoms": [
-      "Workflow pods show Error status with CrashLoopBackOff",
-      "Retry limit reached but underlying issue not resolved",
-      "Workflow logs not accessible after pod termination",
-      "New workflows fail with similar errors"
-    ],
-    "root_cause": [
-      "Container image not found or pull failed",
-      "Missing required Kubernetes secrets or ConfigMaps",
-      "Resource requests exceed available node capacity",
-      "Workflow template has invalid parameter references"
-    ],
-    "diagnosis": [
-      "Check workflow status: argo get <workflow-name>",
-      "Inspect pod events: kubectl describe pod <pod-name>",
-      "Review workflow logs: argo logs <workflow-name>",
-      "Validate workflow template: argo template get"
-    ],
-    "fix": [
-      "Ensure container images exist and are accessible",
-      "Create required secrets and ConfigMaps before workflow execution",
-      "Adjust resource requests in workflow spec",
-      "Fix parameter references in workflow template"
-    ],
-    "prevention": [
-      "Validate workflow syntax before submission",
-      "Implement pre-flight checks for required resources",
-      "Use workflow templates with tested parameters",
-      "Set up alerts for workflow failures"
-    ],
-    "tags": ["argo", "kubernetes", "workflows", "ci-cd"]
-  },
-  {
-    "id": "jenkins-plugin-conflict",
-    "title": "Jenkins plugins causing conflicts after upgrade",
+    "id": "jenkins-build-queue",
+    "title": "Jenkins build queue backing up causing long wait times",
     "tool": "Jenkins",
     "category": "CI/CD",
     "severity": "P2",
-    "popularity": 63,
+    "popularity": 75,
     "symptoms": [
-      "Jenkins UI shows plugin dependency errors",
-      "Builds fail after plugin updates",
-      "Controller fails to start with plugin loading errors",
-      "Plugin manager shows unresolved dependencies"
+      "Builds waiting in queue for 30+ minutes",
+      "All executors busy but some jobs stuck",
+      "Build priority not respected",
+      "Pipeline taking hours to start"
     ],
     "root_cause": [
-      "Plugin version incompatible with Jenkins core version",
-      "Transitive dependency conflicts between plugins",
-      "Deprecated plugins still referenced in jobs",
-      "Plugin update broke API used by other plugins"
+      "Insufficient executor capacity for workload",
+      "Long-running builds blocking executors",
+      "Build queue not properly configured with priorities",
+      "Agent nodes not scaling with demand"
     ],
     "diagnosis": [
-      "Check plugin manager for dependency warnings",
-      "Review Jenkins logs for plugin loading errors",
-      "Identify problematic plugins using plugin dependency viewer",
-      "Check Jenkins version compatibility matrix"
+      "Check executor usage: Manage Jenkins -> Manage Nodes",
+      "Review build queue length and wait times",
+      "Examine job logs for executor acquisition",
+      "Check agent node status and capacity"
     ],
     "fix": [
-      "Rollback to previous plugin versions using plugin manager",
-      "Uninstall conflicting plugins and reinstall compatible versions",
-      "Update Jenkins core to latest stable version",
-      "Replace deprecated plugins with modern alternatives"
+      "Add more executor nodes or increase capacity",
+      "Configure build queue with proper priorities",
+      "Implement node auto-scaling for Kubernetes agents",
+      "Break long builds into smaller stages"
     ],
     "prevention": [
-      "Test plugin updates in staging environment first",
-      "Enable automatic plugin dependency resolution",
-      "Document plugin versions in configuration as code",
-      "Regularly review and update plugins"
+      "Monitor build queue length and executor utilization",
+      "Use labels and priorities for critical builds",
+      "Implement agent auto-scaling based on queue depth",
+      "Set up alerts for queue wait times"
     ],
-    "tags": ["jenkins", "plugins", "upgrade", "dependencies"]
+    "tags": ["jenkins", "ci", "queue", "performance"]
   },
   {
-    "id": "gitlab-artifact-expiry",
-    "title": "GitLab CI artifacts expiring too quickly breaking downstream jobs",
-    "tool": "GitLab CI",
-    "category": "CI/CD",
-    "severity": "P3",
-    "popularity": 54,
-    "symptoms": [
-      "Downstream jobs fail with 'artifact not found' error",
-      "Artifacts disappear from job page unexpectedly",
-      "Manual artifact download shows 404 error",
-      "Artifact expiry settings not respected"
-    ],
-    "root_cause": [
-      "Default artifact expiry too short for pipeline dependencies",
-      "Artifact retention policy overridden by global settings",
-      "Artifacts not properly uploaded due to network issues",
-      "Artifact storage backend reaching capacity limits"
-    ],
-    "diagnosis": [
-      "Check job artifact expiry settings in .gitlab-ci.yml",
-      "Review global artifact retention in project settings",
-      "Check job logs for artifact upload errors",
-      "Verify artifact storage backend health"
-    ],
-    "fix": [
-      "Set explicit artifact expiry in job configuration",
-      "Increase global artifact retention period in project settings",
-      "Use artifacts:when: always for critical artifacts",
-      "Implement artifact archive to external storage"
-    ],
-    "prevention": [
-      "Document artifact dependencies in pipeline documentation",
-      "Use GitLab package registry for long-term storage",
-      "Implement artifact cleanup policies based on importance",
-      "Monitor artifact storage usage"
-    ],
-    "tags": ["gitlab", "ci", "artifacts", "storage"]
-  },
-  {
-    "id": "github-actions-cache",
-    "title": "GitHub Actions cache not working causing slow builds",
+    "id": "github-actions-runner",
+    "title": "GitHub Actions self-hosted runners failing to pick up jobs",
     "tool": "GitHub Actions",
     "category": "CI/CD",
-    "severity": "P3",
-    "popularity": 57,
+    "severity": "P2",
+    "popularity": 72,
     "symptoms": [
-      "Dependencies reinstalled on every run despite cache configuration",
-      "Build time significantly longer than expected",
-      "Cache hit rate shows 0% in actions cache",
-      "Cache size limit reached unexpectedly"
+      "Jobs stuck in queued state on self-hosted runners",
+      "Runner showing online but not accepting jobs",
+      "Workflow timeout while waiting for runner",
+      "GitHub-hosted runners working but self-hosted not"
     ],
     "root_cause": [
-      "Cache key not matching between runs due to version changes",
-      "Cache path incorrectly specified in workflow",
-      "Cache size exceeded 10GB limit per repository",
-      "Cache not restored due to branch mismatch"
+      "Runner agent process crashed or hung",
+      "Runner disk full preventing job execution",
+      "Runner not registered with correct labels",
+      "GitHub service unable to communicate with runner"
     ],
     "diagnosis": [
-      "Check cache action logs for hit/miss status",
-      "Review cache key formulation in workflow file",
-      "Monitor cache usage in repository settings",
-      "Compare cache keys between successful and failed runs"
+      "Check runner status in GitHub repository settings",
+      "Review runner agent logs on the host machine",
+      "Verify runner labels match workflow requirements",
+      "Check disk space and system resources on runner"
     ],
     "fix": [
-      "Use stable cache keys with version prefixes",
-      "Specify correct cache paths for dependencies",
-      "Implement cache cleanup with restore-keys",
-      "Split large caches into smaller, more targeted caches"
+      "Restart the runner agent service",
+      "Free up disk space on runner host",
+      "Update runner labels to match workflow requirements",
+      "Re-register runner if communication broken"
     ],
     "prevention": [
-      "Use hashFiles for cache key based on dependency files",
-      "Document cache strategy in workflow comments",
-      "Regularly review and optimize cache configuration",
-      "Monitor cache hit rate metrics"
+      "Monitor runner health and resource usage",
+      "Set up disk space alerts on runner hosts",
+      "Use runner groups for better organization",
+      "Implement automatic runner recovery"
     ],
-    "tags": ["github-actions", "ci", "cache", "performance"]
+    "tags": ["github-actions", "ci", "runners", "self-hosted"]
   },
   {
-    "id": "teamcity-agent-disconnect",
-    "title": "TeamCity build agents disconnecting during long-running builds",
-    "tool": "TeamCity",
+    "id": "gitlab-runner-executor",
+    "title": "GitLab CI runners failing with executor errors",
+    "tool": "GitLab CI",
     "category": "CI/CD",
     "severity": "P2",
-    "popularity": 52,
+    "popularity": 68,
     "symptoms": [
-      "Build agents show 'disconnected' status during execution",
-      "Builds fail with agent communication error",
-      "Agent logs show heartbeat timeout",
-      "Only long builds affected, short builds complete successfully"
+      "Jobs failing with 'executor failed' error",
+      "Runner unable to execute shell commands",
+      "Docker executor failing to pull images",
+      "SSH executor connection refused"
     ],
     "root_cause": [
-      "Network timeout between agent and server during long builds",
-      "Agent process running out of memory",
-      "Firewall or proxy dropping idle connections",
-      "Server under heavy load causing delayed responses"
+      "Docker daemon not running on runner host",
+      "Executor misconfigured in config.toml",
+      "Insufficient permissions for executor user",
+      "Network issues preventing executor operation"
     ],
     "diagnosis": [
-      "Check agent logs for timeout errors",
-      "Review network connectivity between agent and server",
-      "Monitor agent memory usage during builds",
-      "Check server load and response times"
+      "Check runner logs: journalctl -u gitlab-runner",
+      "Verify Docker daemon status: systemctl status docker",
+      "Review config.toml executor configuration",
+      "Test executor manually on runner host"
     ],
     "fix": [
-      "Increase agent heartbeat interval in buildAgent.properties",
-      "Adjust firewall and proxy timeout settings",
-      "Increase agent memory allocation",
-      "Optimize server performance or scale horizontally"
+      "Start or restart Docker daemon",
+      "Fix executor configuration in config.toml",
+      "Grant necessary permissions to runner user",
+      "Reinstall runner if configuration corrupted"
     ],
     "prevention": [
-      "Configure appropriate timeout values for expected build durations",
-      "Monitor agent health and connectivity",
-      "Use keep-alive settings for network connections",
-      "Implement agent auto-reconnection logic"
+      "Monitor runner and executor health",
+      "Use container-based runners for isolation",
+      "Implement executor health checks",
+      "Document executor configuration standards"
     ],
-    "tags": ["teamcity", "ci", "agents", "networking"]
+    "tags": ["gitlab", "ci", "runners", "executor"]
   },
   {
-    "id": "concourse-resource-failed",
-    "title": "Concourse resources failing to check and update",
-    "tool": "Concourse",
+    "id": "docker-compose-build",
+    "title": "Docker Compose builds failing with dependency conflicts",
+    "tool": "Docker Compose",
     "category": "CI/CD",
     "severity": "P2",
-    "popularity": 48,
+    "popularity": 65,
     "symptoms": [
-      "Resources show 'errored' status in pipeline",
-      "Builds hang waiting for resource updates",
-      "Resource check logs show authentication or network errors",
-      "New versions not detected despite changes in source"
+      "docker-compose build fails with service dependency errors",
+      "Build context not found for services",
+      "Network creation fails during compose up",
+      "Volume mount permission errors"
     ],
     "root_cause": [
-      "Resource credentials expired or invalid",
-      "Resource type image incompatible with runtime",
-      "Network connectivity issues to external resource",
-      "Resource check interval too long"
+      "Service dependencies incorrectly defined",
+      "Build context path wrong in compose file",
+      "Network name conflicts with existing networks",
+      "Volume paths not accessible on host"
     ],
     "diagnosis": [
-      "Check resource status in Concourse UI",
-      "Review resource check logs for error details",
-      "Verify credentials in vault or pipeline secrets",
-      "Test resource type container locally"
+      "Review docker-compose.yml for dependency errors",
+      "Check build context paths exist on filesystem",
+      "List existing networks: docker network ls",
+      "Verify volume paths and permissions"
     ],
     "fix": [
-      "Update resource credentials in pipeline or vault",
-      "Use compatible resource type image version",
-      "Fix network connectivity or configure proxy",
-      "Adjust resource check interval in pipeline configuration"
+      "Fix service dependencies in docker-compose.yml",
+      "Correct build context paths",
+      "Use unique network names or remove conflicting networks",
+      "Fix volume permissions and paths"
     ],
     "prevention": [
-      "Use credential management for resource authentication",
-      "Monitor resource health with alerts",
-      "Test resource types before production use",
-      "Document resource dependencies and requirements"
+      "Validate compose file before deployment",
+      "Use relative paths for build contexts",
+      "Document network and volume requirements",
+      "Test compose configuration locally"
     ],
-    "tags": ["concourse", "ci", "resources", "pipelines"]
+    "tags": ["docker", "compose", "ci", "build"]
+  },
+  {
+    "id": "helm-chart-install",
+    "title": "Helm chart installation failing with template errors",
+    "tool": "Helm",
+    "category": "CI/CD",
+    "severity": "P2",
+    "popularity": 70,
+    "symptoms": [
+      "helm install fails with template rendering error",
+      "Values not being substituted in templates",
+      "Chart dependencies not downloading",
+      "Release already exists error"
+    ],
+    "root_cause": [
+      "Template syntax errors in chart files",
+      "Values file not passed or incorrect",
+      "Chart repository not accessible",
+      "Release name conflict in namespace"
+    ],
+    "diagnosis": [
+      "Validate chart: helm lint <chart>",
+      "Check template syntax: helm template <chart>",
+      "Verify values file: helm show values <chart>",
+      "List existing releases: helm list"
+    ],
+    "fix": [
+      "Fix template syntax errors in chart",
+      "Pass correct values file with -f flag",
+      "Add chart repository or use local chart",
+      "Upgrade existing release or use different name"
+    ],
+    "prevention": [
+      "Always lint charts before deployment",
+      "Use helm template to validate rendering",
+      "Version control values files",
+      "Implement chart testing in CI pipeline"
+    ],
+    "tags": ["helm", "kubernetes", "ci", "charts"]
+  },
+  {
+    "id": "ansible-playbook-fail",
+    "title": "Ansible playbook failing with unreachable hosts",
+    "tool": "Ansible",
+    "category": "CI/CD",
+    "severity": "P2",
+    "popularity": 58,
+    "symptoms": [
+      "Playbook fails with 'UNREACHABLE' for hosts",
+      "SSH connection timeout errors",
+      "Permission denied for ansible user",
+      "Python not found on target hosts"
+    ],
+    "root_cause": [
+      "SSH keys not configured or incorrect",
+      "Host not reachable from control node",
+      "Ansible user lacks sudo permissions",
+      "Python not installed on target hosts"
+    ],
+    "diagnosis": [
+      "Test SSH connection: ssh ansible-user@host",
+      "Check ansible inventory configuration",
+      "Verify Python on target: python --version",
+      "Review ansible.cfg for connection settings"
+    ],
+    "fix": [
+      "Configure SSH keys for ansible user",
+      "Fix network connectivity to hosts",
+      "Grant sudo permissions to ansible user",
+      "Install Python on target hosts"
+    ],
+    "prevention": [
+      "Use SSH key-based authentication",
+      "Pre-configure target hosts with required dependencies",
+      "Test connectivity before running playbooks",
+      "Use ansible ping module for health checks"
+    ],
+    "tags": ["ansible", "automation", "ssh", "configuration"]
+  },
+  {
+    "id": "nginx-config-reload",
+    "title": "Nginx configuration reload failing causing downtime",
+    "tool": "Nginx",
+    "category": "Networking",
+    "severity": "P1",
+    "popularity": 78,
+    "symptoms": [
+      "nginx -t passes but nginx -reload fails",
+      "Service becomes unavailable during reload",
+      "Configuration changes not taking effect",
+      "Worker processes crashing after reload"
+    ],
+    "root_cause": [
+      "Syntax error in new configuration",
+      "SSL certificate path incorrect",
+      "Upstream server not responding during reload",
+      "Memory limit exceeded during configuration reload"
+    ],
+    "diagnosis": [
+      "Test configuration: nginx -t",
+      "Check error logs: tail -f /var/log/nginx/error.log",
+      "Verify SSL certificate paths and permissions",
+      "Monitor memory usage during reload"
+    ],
+    "fix": [
+      "Fix syntax errors in nginx configuration",
+      "Correct SSL certificate paths",
+      "Remove or fix upstream server configuration",
+      "Increase worker processes or memory limits"
+    ],
+    "prevention": [
+      "Always test configuration before reload",
+      "Use configuration management for nginx",
+      "Implement graceful reload procedures",
+      "Monitor nginx health after changes"
+    ],
+    "tags": ["nginx", "configuration", "reload", "downtime"]
+  },
+  {
+    "id": "elasticsearch-cluster-health",
+    "title": "Elasticsearch cluster health showing red status",
+    "tool": "Elasticsearch",
+    "category": "Observability",
+    "severity": "P1",
+    "popularity": 80,
+    "symptoms": [
+      "Cluster health API returns red status",
+      "Some shard allocations failed",
+      "Search queries returning incomplete results",
+      "Indexing operations failing"
+    ],
+    "root_cause": [
+      "Node disk space above watermark",
+      "Too many unassigned shards",
+      "JVM heap memory pressure",
+      "Network partition between nodes"
+    ],
+    "diagnosis": [
+      "Check cluster health: GET _cluster/health",
+      "Review shard allocation: GET _cat/shards?v",
+      "Check node stats: GET _nodes/stats",
+      "Examine Elasticsearch logs for errors"
+    ],
+    "fix": [
+      "Free up disk space or increase watermark settings",
+      "Manually allocate stuck shards",
+      "Increase JVM heap size or add nodes",
+      "Fix network connectivity between nodes"
+    ],
+    "prevention": [
+      "Monitor disk space and set alerts",
+      "Use index lifecycle management",
+      "Right-size heap memory for workload",
+      "Implement cluster monitoring"
+    ],
+    "tags": ["elasticsearch", "cluster", "health", "monitoring"]
   }
 ]
