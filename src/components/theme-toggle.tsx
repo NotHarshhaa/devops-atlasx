@@ -23,7 +23,6 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="gap-2"
     >
       {theme === 'dark' ? (
         <HugeiconsIcon icon={SunIcon} size={20} />
