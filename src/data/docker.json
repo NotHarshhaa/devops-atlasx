@@ -1,0 +1,72 @@
+[
+  {
+    "id": "docker-no-space-left",
+    "title": "Docker builds failing with 'no space left on device'",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P1",
+    "popularity": 91,
+    "symptoms": [
+      "docker build fails with 'write /var/lib/docker/tmp: no space left on device'",
+      "df -h shows /var/lib/docker at 100%",
+      "CI jobs start failing intermittently"
+    ],
+    "root_cause": [
+      "Accumulated dangling images, stopped containers and build cache",
+      "Large layers in multi-stage builds retained by BuildKit",
+      "Overlay2 driver writing to a volume without an auto-prune policy"
+    ],
+    "diagnosis": [
+      "docker system df to see disk usage by type",
+      "du -sh /var/lib/docker/* | sort -h",
+      "journalctl -u docker for any driver errors"
+    ],
+    "fix": [
+      "Reclaim space immediately:",
+      "```bash\ndocker system prune -af --volumes\ndocker builder prune -af\n```",
+      "Move Docker root to a larger disk if needed:",
+      "```json\n{\n  \"data-root\": \"/mnt/docker\"\n}\n```",
+      "Restart the daemon: `systemctl restart docker`"
+    ],
+    "prevention": [
+      "Schedule a nightly `docker system prune -af --filter until=72h`",
+      "Use `--mount=type=cache` in Dockerfiles instead of COPY caches",
+      "Monitor disk with a 75% alert threshold"
+    ],
+    "tags": ["docker", "disk", "prune", "ci", "buildkit"]
+  },
+  {
+    "id": "docker-slow-build",
+    "title": "Docker builds are extremely slow on every commit",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P3",
+    "popularity": 67,
+    "symptoms": [
+      "Every CI build takes 10+ minutes",
+      "Cache is never reused between runs",
+      "npm install or apt-get runs on every build"
+    ],
+    "root_cause": [
+      "COPY . . placed before dependency install invalidates cache",
+      "BuildKit not enabled so layers cannot be shared across runners",
+      "No remote cache backend configured"
+    ],
+    "diagnosis": [
+      "Inspect build output for 'CACHED' lines - if none appear cache is broken",
+      "Run with DOCKER_BUILDKIT=1 docker build --progress=plain"
+    ],
+    "fix": [
+      "Reorder the Dockerfile to copy lock files first:",
+      "```dockerfile\nFROM node:20-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n```",
+      "Enable a registry cache:",
+      "```bash\ndocker buildx build \\\n  --cache-to type=registry,ref=reg/app:cache,mode=max \\\n  --cache-from type=registry,ref=reg/app:cache .\n```"
+    ],
+    "prevention": [
+      "Adopt multi-stage builds",
+      "Pin base images and run Dependabot on them",
+      "Enforce image size budgets in CI"
+    ],
+    "tags": ["docker", "performance", "buildkit", "cache"]
+  }
+]

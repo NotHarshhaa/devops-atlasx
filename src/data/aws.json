@@ -1,0 +1,72 @@
+[
+  {
+    "id": "aws-rds-connection-storm",
+    "title": "Application hit RDS max_connections during traffic spike",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P1",
+    "popularity": 88,
+    "symptoms": [
+      "Application logs show 'FATAL: too many connections for role app'",
+      "RDS DatabaseConnections metric is flat at the maximum",
+      "Users see 5xx responses during peak hours"
+    ],
+    "root_cause": [
+      "Each pod opens its own connection pool and traffic doubled",
+      "Long-lived Lambda concurrency spikes created new connections faster than RDS could recycle",
+      "No connection pooler (RDS Proxy or PgBouncer) in front of the database"
+    ],
+    "diagnosis": [
+      "Check Performance Insights → Top SQL for hanging sessions",
+      "SELECT count(*) FROM pg_stat_activity GROUP BY state;",
+      "Look at CloudWatch DatabaseConnections and CPUUtilization"
+    ],
+    "fix": [
+      "Introduce RDS Proxy in front of the database:",
+      "```bash\naws rds create-db-proxy \\\n  --db-proxy-name app-proxy \\\n  --engine-family POSTGRESQL \\\n  --auth AuthScheme=SECRETS,SecretArn=$SECRET \\\n  --role-arn $ROLE_ARN\n```",
+      "Lower the application pool size per pod and raise RDS max_connections in the parameter group",
+      "Kill stuck sessions: `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE state = 'idle in transaction' AND state_change < now() - interval '10 min';`"
+    ],
+    "prevention": [
+      "Load test the pool size × replica count against max_connections",
+      "Adopt RDS Proxy for all serverless workloads",
+      "Alert at 70% of max_connections"
+    ],
+    "tags": ["aws", "rds", "database", "connections", "lambda"]
+  },
+  {
+    "id": "aws-s3-403",
+    "title": "Application receives 403 AccessDenied when reading S3 after IAM change",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 74,
+    "symptoms": [
+      "boto3 or aws s3 cp returns 403 AccessDenied",
+      "Worked fine before the last IAM policy update",
+      "CloudTrail shows errorCode AccessDenied"
+    ],
+    "root_cause": [
+      "Overly restrictive bucket policy conflicts with IAM role",
+      "Missing kms:Decrypt permission for the SSE-KMS key",
+      "S3 Block Public Access or VPC endpoint policy blocking the call"
+    ],
+    "diagnosis": [
+      "Copy the CloudTrail entry and paste into the IAM policy simulator",
+      "Check bucket policy: `aws s3api get-bucket-policy --bucket <name>`",
+      "Inspect the VPC endpoint policy if using PrivateLink"
+    ],
+    "fix": [
+      "Grant the role permission to the KMS key:",
+      "```json\n{\n  \"Effect\": \"Allow\",\n  \"Action\": [\"kms:Decrypt\", \"kms:GenerateDataKey\"],\n  \"Resource\": \"arn:aws:kms:us-east-1:123:key/abc\"\n}\n```",
+      "Align the bucket policy principal ARN with the actual role used at runtime",
+      "Re-deploy with the fresh credentials and validate via `aws sts get-caller-identity`"
+    ],
+    "prevention": [
+      "Enforce a break-glass review for bucket policy changes",
+      "Use Access Analyzer to detect unintended public access",
+      "Write integration tests that read/write a canary object on deploy"
+    ],
+    "tags": ["aws", "s3", "iam", "kms", "403"]
+  }
+]

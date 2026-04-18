@@ -1,0 +1,72 @@
+[
+  {
+    "id": "jenkins-agent-offline",
+    "title": "Jenkins agents disconnect intermittently during long builds",
+    "tool": "Jenkins",
+    "category": "CI/CD",
+    "severity": "P2",
+    "popularity": 62,
+    "symptoms": [
+      "Build log ends with 'FATAL: channel is already closed'",
+      "Agent status flips to offline then reconnects a minute later",
+      "Only long-running jobs are affected"
+    ],
+    "root_cause": [
+      "JNLP keepalive interval longer than the idle timeout of the load balancer",
+      "Agent pod hits memory limit and the kernel OOMs the JVM",
+      "Controller under-provisioned causing event loop backpressure"
+    ],
+    "diagnosis": [
+      "Inspect controller logs for 'Ping failed. Terminating the channel'",
+      "kubectl top pod on the agent pod during the build",
+      "Check LB idle timeout (AWS NLB default is 350s)"
+    ],
+    "fix": [
+      "Lower JNLP ping interval to 60s:",
+      "```bash\njava -Dhudson.slaves.ChannelPinger.pingInterval=60 -jar agent.jar\n```",
+      "Raise LB idle timeout to 3600s and set `-XX:MaxRAMPercentage=75`",
+      "Scale controller CPU and separate build logs onto an EBS volume"
+    ],
+    "prevention": [
+      "Track build duration SLO and alert on channel-closed errors",
+      "Use ephemeral Kubernetes agents with requests/limits aligned",
+      "Enable JCasC so controller config is reproducible"
+    ],
+    "tags": ["jenkins", "ci", "agents", "jnlp", "kubernetes"]
+  },
+  {
+    "id": "gha-secret-leak",
+    "title": "GitHub Actions workflow exposes secrets in logs",
+    "tool": "GitHub Actions",
+    "category": "CI/CD",
+    "severity": "P1",
+    "popularity": 70,
+    "symptoms": [
+      "Secret value visible in the job log output",
+      "GitHub secret scanner raises an alert",
+      "PR from a fork triggered the workflow"
+    ],
+    "root_cause": [
+      "Workflow uses pull_request_target and checks out the untrusted PR code",
+      "Secrets injected through `run: echo $SECRET` without masking",
+      "Third-party action was pinned to a moving tag that was compromised"
+    ],
+    "diagnosis": [
+      "Audit the workflow trigger: `on:` section",
+      "Check action SHAs against the original repo",
+      "Review log with GITHUB_TOKEN permissions"
+    ],
+    "fix": [
+      "Rotate the leaked secret immediately in the settings UI and provider",
+      "Switch to `pull_request` trigger and require `permissions: read-all`",
+      "Pin actions by SHA:",
+      "```yaml\n- uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11\n```"
+    ],
+    "prevention": [
+      "Enable required reviewers on environments containing production secrets",
+      "Use OIDC federation with AWS/GCP instead of long-lived tokens",
+      "Run gitleaks in CI to block accidental commits"
+    ],
+    "tags": ["github-actions", "ci", "secrets", "security", "oidc"]
+  }
+]

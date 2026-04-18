@@ -1,0 +1,71 @@
+[
+  {
+    "id": "tf-state-lock",
+    "title": "Terraform apply blocked by stale state lock",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P2",
+    "popularity": 80,
+    "symptoms": [
+      "terraform apply errors with 'Error acquiring the state lock'",
+      "LockID is present in DynamoDB after a failed CI job",
+      "Nobody else is currently running Terraform"
+    ],
+    "root_cause": [
+      "CI runner crashed or was cancelled mid-apply and never released the lock",
+      "Network partition between runner and the DynamoDB backend",
+      "Manual `terraform apply` run with Ctrl+C"
+    ],
+    "diagnosis": [
+      "Check who owns the lock in the error message (Who/When fields)",
+      "Inspect the DynamoDB lock table for the LockID entry",
+      "Verify no other pipeline is still executing"
+    ],
+    "fix": [
+      "Force-unlock after confirming no live apply:",
+      "```bash\nterraform force-unlock -force <LOCK_ID>\n```",
+      "If state is corrupted, restore from the most recent S3 version:",
+      "```bash\naws s3api list-object-versions --bucket tf-state --prefix prod/terraform.tfstate\naws s3api copy-object --copy-source tf-state/prod/terraform.tfstate?versionId=<id> \\\n  --bucket tf-state --key prod/terraform.tfstate\n```"
+    ],
+    "prevention": [
+      "Run Terraform with `-lock-timeout=10m` to wait instead of failing fast",
+      "Use short-lived credentials scoped per pipeline run",
+      "Alert on state locks held longer than 15 minutes"
+    ],
+    "tags": ["terraform", "state", "lock", "dynamodb", "s3"]
+  },
+  {
+    "id": "tf-drift",
+    "title": "Terraform plan shows endless drift on tags",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P3",
+    "popularity": 58,
+    "symptoms": [
+      "Every plan shows the same tag being added and removed",
+      "Drift report from Terraform Cloud never reaches zero",
+      "Resources were modified in the AWS console"
+    ],
+    "root_cause": [
+      "An out-of-band change applied tags from a different owner",
+      "A provider default_tags block conflicts with per-resource tags",
+      "Auto-tagging policy (Service Control Policy) injects tags"
+    ],
+    "diagnosis": [
+      "terraform plan -refresh-only to see the delta",
+      "Inspect the resource in the console to locate the extra tag",
+      "Search the provider block for default_tags"
+    ],
+    "fix": [
+      "Adopt the tags into code using `default_tags` in the provider:",
+      "```hcl\nprovider \"aws\" {\n  default_tags {\n    tags = {\n      Owner      = \"platform\"\n      CostCenter = \"infra\"\n    }\n  }\n}\n```",
+      "Run `terraform apply -refresh-only` to sync state without changes"
+    ],
+    "prevention": [
+      "Disable console write access in production accounts",
+      "Enable drift detection in Terraform Cloud",
+      "Store an allow-list of auto-applied tags in a shared module"
+    ],
+    "tags": ["terraform", "drift", "tags", "aws"]
+  }
+]

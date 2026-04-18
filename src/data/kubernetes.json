@@ -1,0 +1,109 @@
+[
+  {
+    "id": "k8s-crashloopbackoff",
+    "title": "Pods stuck in CrashLoopBackOff after deployment",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P1",
+    "popularity": 98,
+    "symptoms": [
+      "Pod status shows CrashLoopBackOff in kubectl get pods",
+      "Restart counter keeps incrementing every few seconds",
+      "Application endpoints return 502 from the ingress",
+      "Readiness probe never succeeds"
+    ],
+    "root_cause": [
+      "Container process exits with a non-zero status code shortly after start",
+      "Typical causes: missing environment variables, bad config map mount path, failing database connection, OOMKilled due to low memory limits",
+      "Kubelet backs off exponentially between restarts causing the CrashLoopBackOff state"
+    ],
+    "diagnosis": [
+      "Inspect pod events: kubectl describe pod <pod>",
+      "Stream the previous container logs: kubectl logs <pod> --previous",
+      "Check resource usage and OOM signals: kubectl get events --field-selector involvedObject.name=<pod>",
+      "Validate the image runs locally: docker run --rm <image>"
+    ],
+    "fix": [
+      "Fix the underlying error surfaced in `kubectl logs --previous`",
+      "Increase memory limits if the pod was OOMKilled:",
+      "```yaml\nresources:\n  requests:\n    memory: 256Mi\n    cpu: 100m\n  limits:\n    memory: 512Mi\n    cpu: 500m\n```",
+      "Restart the rollout once fixed: `kubectl rollout restart deployment/<name>`"
+    ],
+    "prevention": [
+      "Add a liveness and readiness probe that match real application health",
+      "Run `kubectl apply --dry-run=server` in CI to catch schema errors",
+      "Ship structured logs and wire alerts on restart count > 3 in 5m"
+    ],
+    "tags": ["kubernetes", "pods", "crashloopbackoff", "oomkilled", "debugging"]
+  },
+  {
+    "id": "k8s-imagepullbackoff",
+    "title": "ImagePullBackOff when rolling out a new container image",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 85,
+    "symptoms": [
+      "Pods stay in ImagePullBackOff or ErrImagePull",
+      "kubectl describe shows 'unauthorized: authentication required' or 'manifest unknown'",
+      "New deployments never become Ready"
+    ],
+    "root_cause": [
+      "Registry credentials missing or expired in the namespace",
+      "Image tag does not exist or was overwritten",
+      "Private registry not whitelisted on the nodes"
+    ],
+    "diagnosis": [
+      "kubectl describe pod <pod> and read the Events section",
+      "Verify the image exists: `docker pull <image>` from a worker node",
+      "Inspect the imagePullSecret: kubectl get secret regcred -o yaml"
+    ],
+    "fix": [
+      "Recreate the pull secret:",
+      "```bash\nkubectl create secret docker-registry regcred \\\n  --docker-server=registry.example.com \\\n  --docker-username=$USER \\\n  --docker-password=$TOKEN \\\n  --namespace=prod\n```",
+      "Reference it in the service account or pod spec:",
+      "```yaml\nimagePullSecrets:\n  - name: regcred\n```"
+    ],
+    "prevention": [
+      "Pin images by digest (sha256) instead of mutable tags",
+      "Rotate registry tokens via a secret manager with expiry alerts",
+      "Mirror critical images to an internal registry"
+    ],
+    "tags": ["kubernetes", "registry", "imagepullbackoff", "secrets"]
+  },
+  {
+    "id": "k8s-pending-pods",
+    "title": "Pods stay Pending due to insufficient node resources",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 72,
+    "symptoms": [
+      "Pods remain in Pending state for minutes",
+      "Events show 0/5 nodes are available: insufficient cpu",
+      "HPA cannot scale workload"
+    ],
+    "root_cause": [
+      "Requests exceed available allocatable resources on all nodes",
+      "Taints/tolerations or node selectors block scheduling",
+      "Cluster autoscaler disabled or hitting max node count"
+    ],
+    "diagnosis": [
+      "kubectl describe pod <pod> → Events",
+      "kubectl top nodes to view live capacity",
+      "kubectl get nodes -o custom-columns=NAME:.metadata.name,CPU:.status.allocatable.cpu,MEM:.status.allocatable.memory"
+    ],
+    "fix": [
+      "Reduce pod requests to a realistic value",
+      "Enable or raise the max size of the cluster autoscaler:",
+      "```bash\neksctl scale nodegroup --cluster prod --name workers --nodes-max 20\n```",
+      "Add a tolerations block if nodes are tainted"
+    ],
+    "prevention": [
+      "Use VPA in recommendation mode to size requests",
+      "Set PodDisruptionBudgets before draining nodes",
+      "Alert on pending pods > 2 minutes"
+    ],
+    "tags": ["kubernetes", "scheduling", "autoscaler", "capacity"]
+  }
+]

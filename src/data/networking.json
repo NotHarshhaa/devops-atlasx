@@ -1,0 +1,71 @@
+[
+  {
+    "id": "nginx-502-upstream",
+    "title": "Nginx returns 502 Bad Gateway under load",
+    "tool": "Nginx",
+    "category": "Networking",
+    "severity": "P1",
+    "popularity": 82,
+    "symptoms": [
+      "Nginx error log shows 'upstream prematurely closed connection'",
+      "502 rate spikes in sync with request volume",
+      "Backend service logs look healthy"
+    ],
+    "root_cause": [
+      "keepalive_requests on upstream exhausted and Nginx re-opens connections aggressively",
+      "Backend timeout is shorter than Nginx proxy_read_timeout",
+      "Backpressure from a slow dependency"
+    ],
+    "diagnosis": [
+      "tail -f /var/log/nginx/error.log | grep upstream",
+      "ss -s on the Nginx host - look at TIME_WAIT count",
+      "Compare upstream_response_time vs request_time"
+    ],
+    "fix": [
+      "Tune upstream keepalive:",
+      "```nginx\nupstream app {\n  server app:8080;\n  keepalive 64;\n  keepalive_requests 1000;\n  keepalive_timeout 60s;\n}\nserver {\n  location / {\n    proxy_http_version 1.1;\n    proxy_set_header Connection \"\";\n    proxy_read_timeout 30s;\n  }\n}\n```",
+      "Ensure backend keepalive timeout > Nginx keepalive_timeout"
+    ],
+    "prevention": [
+      "Load test before launch and alert on 5xx > 1%",
+      "Emit upstream_response_time to Prometheus",
+      "Use circuit breakers in the application tier"
+    ],
+    "tags": ["nginx", "proxy", "502", "networking", "performance"]
+  },
+  {
+    "id": "dns-resolver-timeout",
+    "title": "Intermittent DNS resolution timeouts inside the cluster",
+    "tool": "CoreDNS",
+    "category": "Networking",
+    "severity": "P2",
+    "popularity": 64,
+    "symptoms": [
+      "Random 5s latency spikes on outbound calls",
+      "Application logs show 'lookup: i/o timeout'",
+      "Issue disappears for a while after a redeploy"
+    ],
+    "root_cause": [
+      "conntrack race in the Linux kernel for parallel UDP DNS lookups",
+      "ndots:5 default forces unnecessary search domain lookups",
+      "CoreDNS pod overloaded"
+    ],
+    "diagnosis": [
+      "kubectl -n kube-system logs deploy/coredns | grep -i error",
+      "Use `dig +tries=1 +time=2` from inside a pod repeatedly",
+      "Check conntrack: `conntrack -L -p udp | wc -l`"
+    ],
+    "fix": [
+      "Set dnsPolicy ClusterFirst and tune ndots in the pod spec:",
+      "```yaml\ndnsConfig:\n  options:\n    - name: ndots\n      value: \"2\"\n    - name: single-request-reopen\n```",
+      "Deploy NodeLocal DNSCache to avoid conntrack races",
+      "Scale CoreDNS replicas to >= nodes/4"
+    ],
+    "prevention": [
+      "Bake DNS latency SLOs into your CI smoke tests",
+      "Monitor coredns_dns_response_rcode_count_total",
+      "Upgrade kernel to one with conntrack fix"
+    ],
+    "tags": ["dns", "coredns", "kubernetes", "networking", "latency"]
+  }
+]

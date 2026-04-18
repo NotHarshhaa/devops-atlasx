@@ -1,0 +1,72 @@
+[
+  {
+    "id": "prometheus-high-cardinality",
+    "title": "Prometheus OOMs due to high cardinality metrics",
+    "tool": "Prometheus",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 76,
+    "symptoms": [
+      "Prometheus pod restarts with OOMKilled every few hours",
+      "TSDB head series count exceeds 5M",
+      "Queries time out in Grafana"
+    ],
+    "root_cause": [
+      "A service exposes a label containing request_id or user_id",
+      "Recording rules generate an explosion of series",
+      "Prometheus retention increased without scaling memory"
+    ],
+    "diagnosis": [
+      "topk(10, count by (__name__)({__name__=~\".+\"}))",
+      "Check /api/v1/status/tsdb for top label values",
+      "Container memory usage in Grafana → Prometheus dashboard"
+    ],
+    "fix": [
+      "Drop the offending label via relabel_config:",
+      "```yaml\nmetric_relabel_configs:\n  - source_labels: [request_id]\n    action: labeldrop\n```",
+      "Deploy a remote-write tiered setup (Thanos/Mimir) for long retention",
+      "Restart Prometheus after applying the scrape config"
+    ],
+    "prevention": [
+      "Lint metrics in CI using promtool and a cardinality budget",
+      "Add an alert when head_series grows > 20% week-over-week",
+      "Enforce a label naming guide in the platform handbook"
+    ],
+    "tags": ["prometheus", "metrics", "cardinality", "observability", "oom"]
+  },
+  {
+    "id": "elastic-yellow-cluster",
+    "title": "Elasticsearch cluster stuck in yellow after node replacement",
+    "tool": "Elasticsearch",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 55,
+    "symptoms": [
+      "GET _cluster/health returns status: yellow",
+      "unassigned_shards > 0 but no allocation explanation",
+      "Kibana dashboards display 'shards failed'"
+    ],
+    "root_cause": [
+      "New node added with a different attribute (zone) breaking awareness rules",
+      "Disk watermark exceeded on one node and shards cannot allocate back",
+      "Total shards per node limit reached"
+    ],
+    "diagnosis": [
+      "GET _cluster/allocation/explain",
+      "GET _cat/allocation?v",
+      "Check cluster.routing.allocation.disk.watermark settings"
+    ],
+    "fix": [
+      "Raise the watermark temporarily so recovery can proceed:",
+      "```json\nPUT _cluster/settings\n{\n  \"transient\": {\n    \"cluster.routing.allocation.disk.watermark.low\": \"90%\",\n    \"cluster.routing.allocation.disk.watermark.high\": \"95%\"\n  }\n}\n```",
+      "Re-route the stuck shard manually if needed:",
+      "```json\nPOST _cluster/reroute?retry_failed=true\n```"
+    ],
+    "prevention": [
+      "Automate node attribute labelling via user data",
+      "Track shard-to-node ratio and rebalance before maintenance",
+      "Use ILM to keep shards below 50GB each"
+    ],
+    "tags": ["elasticsearch", "cluster", "shards", "observability"]
+  }
+]
