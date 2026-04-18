@@ -380,5 +380,395 @@
       "Document mapping standards"
     ],
     "tags": ["elasticsearch", "mapping", "index", "elk"]
+  },
+  {
+    "id": "jaeger-tracing",
+    "title": "Jaeger tracing not capturing spans",
+    "tool": "Jaeger",
+    "category": "Observability",
+    "severity": "P3",
+    "popularity": 58,
+    "symptoms": [
+      "No traces appearing in Jaeger UI",
+      "Missing spans in trace data",
+      "Traces incomplete or fragmented",
+      "Sampling rate too low"
+    ],
+    "root_cause": [
+      "Agent not receiving traces from services",
+      "Sampling configuration too aggressive",
+      "Network issues between services and collector",
+      "Incorrect service configuration"
+    ],
+    "diagnosis": [
+      "Check Jaeger agent logs",
+      "Review sampling configuration",
+      "Test network connectivity to collector",
+      "Verify service instrumentation"
+    ],
+    "fix": [
+      "Fix agent configuration",
+      "Adjust sampling rate",
+      "Resolve network connectivity issues",
+      "Update service instrumentation"
+    ],
+    "prevention": [
+      "Test tracing in development",
+      "Use appropriate sampling rates",
+      "Monitor Jaeger health",
+      "Document tracing setup"
+    ],
+    "tags": ["jaeger", "tracing", "observability", "distributed-tracing"]
+  },
+  {
+    "id": "tempo-logs",
+    "title": "Grafana Tempo unable to query trace logs",
+    "tool": "Grafana Tempo",
+    "category": "Observability",
+    "severity": "P3",
+    "popularity": 55,
+    "symptoms": [
+      "Tempo not returning trace data",
+      "Queries timing out",
+      "Trace IDs not found",
+      "Backend storage issues"
+    ],
+    "root_cause": [
+      "Tempo backend overloaded",
+      "Storage backend not responding",
+      "Incorrect query parameters",
+      "Index not built for trace data"
+    ],
+    "diagnosis": [
+      "Check Tempo logs for errors",
+      "Review query parameters",
+      "Monitor storage backend health",
+      "Check Tempo metrics"
+    ],
+    "fix": [
+      "Scale Tempo backend resources",
+      "Fix storage backend connectivity",
+      "Correct query parameters",
+      "Rebuild or configure index"
+    ],
+    "prevention": [
+      "Monitor Tempo performance",
+      "Scale based on trace volume",
+      "Use efficient storage backend",
+      "Implement query validation"
+    ],
+    "tags": ["tempo", "tracing", "grafana", "observability"]
+  },
+  {
+    "id": "loki-labels",
+    "title": "Grafana Loki high cardinality labels causing performance issues",
+    "tool": "Grafana Loki",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 62,
+    "symptoms": [
+      "Loki queries extremely slow",
+      "High memory usage by Loki",
+      "Index size growing rapidly",
+      "Queries timing out"
+    ],
+    "root_cause": [
+      "Using high cardinality values as labels",
+      "Too many unique label values",
+      "Label cardinality not limited",
+      "Index not optimized"
+    ],
+    "diagnosis": [
+      "Check Loki index size",
+      "Review label cardinality",
+      "Analyze query patterns",
+      "Monitor Loki resource usage"
+    ],
+    "fix": [
+      "Remove high cardinality labels",
+      "Move high cardinality data to structured log fields",
+      "Implement label limits",
+      "Optimize index configuration"
+    ],
+    "prevention": [
+      "Use low cardinality labels",
+      "Document label strategy",
+      "Monitor label cardinality",
+      "Test query performance"
+    ],
+    "tags": ["loki", "logging", "performance", "labels"]
+  },
+  {
+    "id": "vector-pipeline",
+    "title": "Vector log pipeline blocking causing backpressure",
+    "tool": "Vector",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 56,
+    "symptoms": [
+      "Logs not reaching destination",
+      "Vector showing backpressure",
+      "High memory usage",
+      "Pipeline throughput degraded"
+    ],
+    "root_cause": [
+      "Sink not keeping up with input rate",
+      "Transforms too CPU-intensive",
+      "Buffer configuration insufficient",
+      "Network issues to destination"
+    ],
+    "diagnosis": [
+      "Check Vector metrics for backpressure",
+      "Review pipeline configuration",
+      "Monitor sink performance",
+      "Analyze buffer usage"
+    ],
+    "fix": [
+      "Scale sink capacity",
+      "Optimize transforms",
+      "Increase buffer size",
+      "Fix network connectivity"
+    ],
+    "prevention": [
+      "Monitor pipeline metrics",
+      "Right-size buffers",
+      "Test pipeline performance",
+      "Implement backpressure handling"
+    ],
+    "tags": ["vector", "logging", "pipeline", "performance"]
+  },
+  {
+    "id": "opentelemetry-collector",
+    "title": "OpenTelemetry Collector failing to process telemetry",
+    "tool": "OpenTelemetry",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 60,
+    "symptoms": [
+      "Telemetry data not reaching backend",
+      "Collector showing errors",
+      "High memory or CPU usage",
+      "Data loss in pipeline"
+    ],
+    "root_cause": [
+      "Collector misconfigured",
+      "Backend not accepting data",
+      "Resource limits too low",
+      "Batch size incorrect"
+    ],
+    "diagnosis": [
+      "Check collector logs",
+      "Review collector configuration",
+      "Monitor resource usage",
+      "Test backend connectivity"
+    ],
+    "fix": [
+      "Fix collector configuration",
+      "Resolve backend issues",
+      "Increase resource limits",
+      "Adjust batch size"
+    ],
+    "prevention": [
+      "Validate configuration",
+      "Monitor collector health",
+      "Set appropriate resource limits",
+      "Test telemetry pipeline"
+    ],
+    "tags": ["opentelemetry", "telemetry", "collector", "observability"]
+  },
+  {
+    "id": "telegraf-config",
+    "title": "Telegraf metrics not being collected",
+    "tool": "Telegraf",
+    "category": "Observability",
+    "severity": "P3",
+    "popularity": 54,
+    "symptoms": [
+      "Metrics not appearing in output",
+      "Telegraf showing collection errors",
+      "Plugins failing to initialize",
+      "Missing metrics from specific inputs"
+    ],
+    "root_cause": [
+      "Incorrect plugin configuration",
+      "Plugin dependency missing",
+      "Permission issues for input plugins",
+      "Output plugin misconfigured"
+    ],
+    "diagnosis": [
+      "Check Telegraf logs",
+      "Review plugin configuration",
+      "Test plugin manually",
+      "Verify output connectivity"
+    ],
+    "fix": [
+      "Fix plugin configuration",
+      "Install missing dependencies",
+      "Grant required permissions",
+      "Configure output plugin correctly"
+    ],
+    "prevention": [
+      "Validate configuration",
+      "Test plugins in isolation",
+      "Document plugin requirements",
+      "Monitor Telegraf health"
+    ],
+    "tags": ["telegraf", "metrics", "monitoring", "influxdb"]
+  },
+  {
+    "id": "thanos-query",
+    "title": "Thanos query frontend slow or unresponsive",
+    "tool": "Thanos",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 59,
+    "symptoms": [
+      "Thanos queries timing out",
+      "Slow query response times",
+      "High memory usage",
+      "Query frontend crashing"
+    ],
+    "root_cause": [
+      "Too many store APIs",
+      "Query not optimized",
+      "Insufficient resources",
+      "Network issues between components"
+    ],
+    "diagnosis": [
+      "Check Thanos query logs",
+      "Review query patterns",
+      "Monitor resource usage",
+      "Test store API connectivity"
+    ],
+    "fix": [
+      "Optimize queries",
+      "Scale query frontend resources",
+      "Reduce number of store APIs",
+      "Fix network connectivity"
+    ],
+    "prevention": [
+      "Monitor query performance",
+      "Use query optimization",
+      "Scale based on load",
+      "Implement query caching"
+    ],
+    "tags": ["thanos", "prometheus", "query", "observability"]
+  },
+  {
+    "id": "alertmanager-silence",
+    "title": "AlertManager alerts not firing or silenced incorrectly",
+    "tool": "AlertManager",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 64,
+    "symptoms": [
+      "Alerts not being sent",
+      "Alerts silenced unexpectedly",
+      "Duplicate alerts",
+      "Alert routing incorrect"
+    ],
+    "root_cause": [
+      "Silence configuration incorrect",
+      "Route configuration wrong",
+      "Inhibition rules misconfigured",
+      "Notification template errors"
+    ],
+    "diagnosis": [
+      "Check AlertManager configuration",
+      "Review active silences",
+      "Test alert routing",
+      "Check notification templates"
+    ],
+    "fix": [
+      "Fix silence configuration",
+      "Correct route configuration",
+      "Adjust inhibition rules",
+      "Fix notification templates"
+    ],
+    "prevention": [
+      "Test alert configuration",
+      "Document alert routing",
+      "Use configuration validation",
+      "Monitor alert delivery"
+    ],
+    "tags": ["alertmanager", "alerts", "prometheus", "monitoring"]
+  },
+  {
+    "id": "zipkin-collector",
+    "title": "Zipkin collector not receiving spans",
+    "tool": "Zipkin",
+    "category": "Observability",
+    "severity": "P3",
+    "popularity": 52,
+    "symptoms": [
+      "No traces in Zipkin UI",
+      "Spans not being collected",
+      "Collector showing errors",
+      "Services not reporting"
+    ],
+    "root_cause": [
+      "Services not configured to send to Zipkin",
+      "Network issues blocking span transmission",
+      "Collector misconfigured",
+      "Port mismatch"
+    ],
+    "diagnosis": [
+      "Check Zipkin collector logs",
+      "Verify service configuration",
+      "Test network connectivity",
+      "Review collector configuration"
+    ],
+    "fix": [
+      "Configure services to send spans to Zipkin",
+      "Fix network connectivity",
+      "Update collector configuration",
+      "Correct port settings"
+    ],
+    "prevention": [
+      "Test tracing setup",
+      "Document Zipkin configuration",
+      "Monitor collector health",
+      "Validate service instrumentation"
+    ],
+    "tags": ["zipkin", "tracing", "observability", "distributed-tracing"]
+  },
+  {
+    "id": "influxdb-retention",
+    "title": "InfluxDB data retention not working correctly",
+    "tool": "InfluxDB",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 57,
+    "symptoms": [
+      "Database size growing indefinitely",
+      "Old data not being deleted",
+      "Disk space exhausted",
+      "Query performance degrading"
+    ],
+    "root_cause": [
+      "Retention policy not configured",
+      "Retention policy disabled",
+      "Incorrect retention duration",
+      "Continuous queries interfering"
+    ],
+    "diagnosis": [
+      "Check retention policy configuration",
+      "Review database size",
+      "Monitor disk usage",
+      "Test retention policy"
+    ],
+    "fix": [
+      "Configure retention policy with appropriate duration",
+      "Enable retention policy",
+      "Manually delete old data if needed",
+      "Review continuous queries"
+    ],
+    "prevention": [
+      "Always configure retention policies",
+      "Monitor database size",
+      "Test retention configuration",
+      "Document retention strategy"
+    ],
+    "tags": ["influxdb", "database", "retention", "monitoring"]
   }
 ]

@@ -379,5 +379,278 @@
       "Document workspace strategy and naming conventions"
     ],
     "tags": ["terraform", "workspaces", "state", "environments"]
+  },
+  {
+    "id": "tf-remote-state",
+    "title": "Terraform remote state locking causing contention",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P2",
+    "popularity": 72,
+    "symptoms": [
+      "Multiple teams unable to run Terraform simultaneously",
+      "Lock acquisition timeouts",
+      "State lock held by stale process",
+      "Deployment pipeline blocked"
+    ],
+    "root_cause": [
+      "State locking not configured for concurrent access",
+      "Long-running Terraform operations",
+      "Stale locks from failed runs",
+      "Single state file for large infrastructure"
+    ],
+    "diagnosis": [
+      "Check state lock status in backend",
+      "Review Terraform run duration",
+      "Identify long-running operations",
+      "Analyze state file size"
+    ],
+    "fix": [
+      "Implement proper state locking with DynamoDB or Consul",
+      "Break long runs into smaller state files",
+      "Configure lock timeout appropriately",
+      "Use Terraform workspaces for isolation"
+    ],
+    "prevention": [
+      "Always use state locking",
+      "Split large state files",
+      "Monitor lock acquisition time",
+      "Use Terraform Cloud/Enterprise for team collaboration"
+    ],
+    "tags": ["terraform", "state", "locking", "collaboration"]
+  },
+  {
+    "id": "tf-output",
+    "title": "Terraform outputs not available after apply",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P3",
+    "popularity": 55,
+    "symptoms": [
+      "terraform output returns no values",
+      "Outputs not showing in state",
+      "Sensitive outputs masked incorrectly",
+      "Outputs depend on resources not created"
+    ],
+    "root_cause": [
+      "Output block missing from configuration",
+      "Resources referenced in output failed",
+      "Sensitive flag hiding output",
+      "Output depends on non-existent resource"
+    ],
+    "diagnosis": [
+      "Check terraform output for errors",
+      "Review output block configuration",
+      "Verify resource creation status",
+      "Check state for output values"
+    ],
+    "fix": [
+      "Add missing output block",
+      "Fix resource creation failures",
+      "Adjust sensitive flag as needed",
+      "Ensure output references valid resources"
+    ],
+    "prevention": [
+      "Always define required outputs",
+      "Test output after apply",
+      "Document output usage",
+      "Use outputs for inter-module communication"
+    ],
+    "tags": ["terraform", "outputs", "configuration", "state"]
+  },
+  {
+    "id": "tf-data-source",
+    "title": "Terraform data sources failing to fetch data",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P2",
+    "popularity": 63,
+    "symptoms": [
+      "Data source returning errors",
+      "Plan failing due to data source issues",
+      "Stale data from data sources",
+      "Authentication failures for data sources"
+    ],
+    "root_cause": [
+      "Incorrect data source configuration",
+      "Authentication credentials invalid",
+      "Data source endpoint unreachable",
+      "Data source provider not configured"
+    ],
+    "diagnosis": [
+      "Review data source configuration",
+      "Check authentication credentials",
+      "Test endpoint connectivity",
+      "Verify provider configuration"
+    ],
+    "fix": [
+      "Fix data source configuration",
+      "Update authentication credentials",
+      "Resolve network connectivity",
+      "Configure provider correctly"
+    ],
+    "prevention": [
+      "Validate data source configuration",
+      "Use provider configuration for credentials",
+      "Test data source access",
+      "Monitor data source freshness"
+    ],
+    "tags": ["terraform", "data-sources", "configuration", "providers"]
+  },
+  {
+    "id": "tf-lifecycle",
+    "title": "Terraform lifecycle rules preventing resource updates",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P3",
+    "popularity": 57,
+    "symptoms": [
+      "Resources not being updated as expected",
+      "Changes ignored by Terraform",
+      "Resources recreated unexpectedly",
+      "Ignore_changes not working"
+    ],
+    "root_cause": [
+      "Lifecycle block misconfigured",
+      "Ignore_changes preventing updates",
+      "Create_before_destroy not set correctly",
+      "Prevent_destroy blocking changes"
+    ],
+    "diagnosis": [
+      "Review lifecycle block configuration",
+      "Check terraform plan output",
+      "Verify resource changes",
+      "Test with lifecycle removed"
+    ],
+    "fix": [
+      "Fix lifecycle block configuration",
+      "Adjust ignore_changes rules",
+      "Set create_before_destroy correctly",
+      "Remove prevent_destroy if needed"
+    ],
+    "prevention": [
+      "Document lifecycle requirements",
+      "Test lifecycle rules",
+      "Use lifecycle sparingly",
+      "Review plan before apply"
+    ],
+    "tags": ["terraform", "lifecycle", "resources", "configuration"]
+  },
+  {
+    "id": "tf-provider-plugin",
+    "title": "Terraform provider plugin download failures",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P2",
+    "popularity": 61,
+    "symptoms": [
+      "terraform init failing to download providers",
+      "Provider checksum mismatch errors",
+      "Network issues during plugin download",
+      "Outdated provider versions"
+    ],
+    "root_cause": [
+      "Network connectivity issues to Terraform Registry",
+      "Proxy configuration blocking downloads",
+      "Checksum verification failed",
+      "Provider version constraints incorrect"
+    ],
+    "diagnosis": [
+      "Check terraform init logs",
+      "Test network connectivity to registry",
+      "Review proxy configuration",
+      "Verify provider version constraints"
+    ],
+    "fix": [
+      "Fix network connectivity or proxy configuration",
+      "Use mirror for provider downloads",
+      "Update provider version constraints",
+      "Manually download and install provider plugins"
+    ],
+    "prevention": [
+      "Use Terraform CLI cache",
+      "Configure provider mirrors",
+      "Pin provider versions",
+      "Monitor provider updates"
+    ],
+    "tags": ["terraform", "providers", "plugins", "networking"]
+  },
+  {
+    "id": "tf-variable",
+    "title": "Terraform variables not being passed correctly",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P3",
+    "popularity": 53,
+    "symptoms": [
+      "Variables using default values instead of passed values",
+      "Plan shows unexpected variable values",
+      "Variable validation errors",
+      "Environment variables not picked up"
+    ],
+    "root_cause": [
+      "Variable file not loaded",
+      "Incorrect variable passing syntax",
+      "Variable name mismatch",
+      "Environment variable prefix wrong"
+    ],
+    "diagnosis": [
+      "Check terraform plan output",
+      "Review variable files",
+      "Verify variable passing method",
+      "Test with -var flag"
+    ],
+    "fix": [
+      "Load correct variable file with -var-file",
+      "Fix variable name in configuration",
+      "Use correct environment variable prefix TF_VAR_",
+      "Pass variables with correct syntax"
+    ],
+    "prevention": [
+      "Document variable requirements",
+      "Use .tfvars files consistently",
+      "Validate variables in configuration",
+      "Test variable passing"
+    ],
+    "tags": ["terraform", "variables", "configuration", "cli"]
+  },
+  {
+    "id": "tf-state-split",
+    "title": "Terraform state file too large causing performance issues",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P2",
+    "popularity": 67,
+    "symptoms": [
+      "Terraform operations very slow",
+      "State file taking too long to load",
+      "Memory errors during terraform plan",
+      "State refresh timeouts"
+    ],
+    "root_cause": [
+      "Too many resources in single state file",
+      "State file contains large attributes",
+      "No state pruning",
+      "Monolithic Terraform configuration"
+    ],
+    "diagnosis": [
+      "Check state file size",
+      "Count resources in state",
+      "Review resource attributes",
+      "Monitor plan duration"
+    ],
+    "fix": [
+      "Split state into multiple files using terraform state mv",
+      "Implement Terraform modules for separation",
+      "Remove old resources from state",
+      "Use remote state with better performance"
+    ],
+    "prevention": [
+      "Plan state file structure from start",
+      "Use modules for organization",
+      "Regularly review and clean state",
+      "Implement state file size limits"
+    ],
+    "tags": ["terraform", "state", "performance", "organization"]
   }
 ]

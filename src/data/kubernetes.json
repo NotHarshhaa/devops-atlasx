@@ -417,5 +417,590 @@
       "Monitor restart reasons to identify probe issues"
     ],
     "tags": ["kubernetes", "probes", "healthcheck", "debugging"]
+  },
+  {
+    "id": "k8s-limit-range",
+    "title": "Pods exceeding resource limits causing evictions",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 68,
+    "symptoms": [
+      "Pods being evicted for resource constraints",
+      "Containers killed for exceeding memory limits",
+      "CPU throttling causing performance degradation",
+      "OOMKilled events in pod logs"
+    ],
+    "root_cause": [
+      "Resource limits not set or too low",
+      "Memory leaks in application",
+      "CPU-intensive operations not optimized",
+      "LimitRange not configured at namespace level"
+    ],
+    "diagnosis": [
+      "Check pod events: kubectl describe pod <pod>",
+      "Review resource usage: kubectl top pod <pod>",
+      "Examine container limits in pod spec",
+      "Check LimitRange configuration"
+    ],
+    "fix": [
+      "Increase resource limits in pod spec",
+      "Fix memory leaks in application",
+      "Optimize CPU-intensive operations",
+      "Configure LimitRange for namespace"
+    ],
+    "prevention": [
+      "Always set resource requests and limits",
+      "Use LimitRange for default values",
+      "Monitor resource usage regularly",
+      "Implement resource quotas"
+    ],
+    "tags": ["kubernetes", "resources", "limits", "eviction"]
+  },
+  {
+    "id": "k8s-network-policy",
+    "title": "Network policies blocking legitimate traffic",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 63,
+    "symptoms": [
+      "Services unable to communicate",
+      "Connection timeouts between pods",
+      "Ingress rules not working as expected",
+      "Egress traffic blocked unexpectedly"
+    ],
+    "root_cause": [
+      "Network policies too restrictive",
+      "Missing allow rules for required traffic",
+      "Incorrect pod selector in network policy",
+      "Network policy not applied to correct namespace"
+    ],
+    "diagnosis": [
+      "List network policies: kubectl get networkpolicies",
+      "Test connectivity between pods",
+      "Review network policy YAML",
+      "Check policy selectors"
+    ],
+    "fix": [
+      "Update network policy to allow required traffic",
+      "Fix pod selectors in network policy",
+      "Add egress rules if needed",
+      "Remove overly restrictive policies"
+    ],
+    "prevention": [
+      "Test network policies in staging",
+      "Document network requirements",
+      "Use network policy validation tools",
+      "Start with permissive policies and restrict gradually"
+    ],
+    "tags": ["kubernetes", "networking", "network-policy", "security"]
+  },
+  {
+    "id": "k8s-storage-class",
+    "title": "PersistentVolumes not provisioning with StorageClass",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 65,
+    "symptoms": [
+      "PVCs stuck in Pending state",
+      "Pods unable to mount volumes",
+      "StorageClass not found errors",
+      "PVs not being created dynamically"
+    ],
+    "root_cause": [
+      "StorageClass not configured or missing",
+      "Provisioner not installed or misconfigured",
+      "Incorrect storage class name in PVC",
+      "Insufficient storage quota"
+    ],
+    "diagnosis": [
+      "Check PVC status: kubectl get pvc",
+      "List StorageClasses: kubectl get storageclass",
+      "Review PVC events",
+      "Check provisioner logs"
+    ],
+    "fix": [
+      "Create or configure default StorageClass",
+      "Install correct provisioner for cloud provider",
+      "Fix storage class name in PVC",
+      "Request storage quota increase"
+    ],
+    "prevention": [
+      "Always configure default StorageClass",
+      "Document storage requirements",
+      "Test PVC creation in staging",
+      "Monitor storage usage"
+    ],
+    "tags": ["kubernetes", "storage", "pvc", "provisioning"]
+  },
+  {
+    "id": "k8s-namespace",
+    "title": "Resource conflicts due to namespace misconfiguration",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P3",
+    "popularity": 56,
+    "symptoms": [
+      "Resources not found in namespace",
+      "Cross-namespace communication failures",
+      "Resource quota exceeded",
+      "DNS resolution issues between namespaces"
+    ],
+    "root_cause": [
+      "Resources deployed in wrong namespace",
+      "Namespace not created",
+      "Resource quotas too restrictive",
+      "Network policies blocking cross-namespace traffic"
+    ],
+    "diagnosis": [
+      "List namespaces: kubectl get ns",
+      "Check resource location: kubectl get all -n <namespace>",
+      "Review resource quotas",
+      "Test DNS resolution between namespaces"
+    ],
+    "fix": [
+      "Deploy resources in correct namespace",
+      "Create missing namespace",
+      "Adjust resource quotas",
+      "Update network policies for cross-namespace traffic"
+    ],
+    "prevention": [
+      "Use namespaces consistently",
+      "Document namespace strategy",
+      "Set appropriate resource quotas",
+      "Implement namespace validation in CI"
+    ],
+    "tags": ["kubernetes", "namespace", "resources", "organization"]
+  },
+  {
+    "id": "k8s-taint-toleration",
+    "title": "Pods not scheduling due to node taints",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 61,
+    "symptoms": [
+      "Pods stuck in Pending state",
+      "Events showing node taints",
+      "No nodes available for scheduling",
+      "Specific workloads not running"
+    ],
+    "root_cause": [
+      "Nodes have taints without matching tolerations",
+      "Pods missing required tolerations",
+      "Taints too restrictive",
+      "Critical pods not scheduled on dedicated nodes"
+    ],
+    "diagnosis": [
+      "Check pod events: kubectl describe pod <pod>",
+      "List node taints: kubectl describe node <node>",
+      "Review pod tolerations",
+      "Verify node availability"
+    ],
+    "fix": [
+      "Add tolerations to pod spec",
+      "Remove unnecessary taints from nodes",
+      "Use node selectors or affinity",
+      "Label dedicated nodes for specific workloads"
+    ],
+    "prevention": [
+      "Document taint and toleration strategy",
+      "Use taints for dedicated nodes",
+      "Test scheduling in staging",
+      "Monitor pod scheduling"
+    ],
+    "tags": ["kubernetes", "scheduling", "taints", "tolerations"]
+  },
+  {
+    "id": "k8s-affinity",
+    "title": "Pods not distributing correctly across nodes",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P3",
+    "popularity": 58,
+    "symptoms": [
+      "Pods concentrated on few nodes",
+      "Node resource imbalance",
+      "High availability not achieved",
+      "Performance issues on overloaded nodes"
+    ],
+    "root_cause": [
+      "No pod anti-affinity configured",
+      "Incorrect affinity rules",
+      "Node selector too restrictive",
+      "Pod topology spread constraints missing"
+    ],
+    "diagnosis": [
+      "Check pod distribution: kubectl get pods -o wide",
+      "Review node resource usage",
+      "Examine pod affinity configuration",
+      "Check topology spread constraints"
+    ],
+    "fix": [
+      "Add pod anti-affinity rules",
+      "Configure topology spread constraints",
+      "Remove restrictive node selectors",
+      "Use proper affinity for HA requirements"
+    ],
+    "prevention": [
+      "Always configure pod anti-affinity for HA",
+      "Use topology spread constraints",
+      "Test pod distribution",
+      "Monitor node resource balance"
+    ],
+    "tags": ["kubernetes", "scheduling", "affinity", "high-availability"]
+  },
+  {
+    "id": "k8s-cronjob",
+    "title": "CronJobs not executing or failing",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 59,
+    "symptoms": [
+      "CronJob not triggering at scheduled time",
+      "Jobs created but pods failing",
+      "Concurrent policy not working",
+      "Job history not retained"
+    ],
+    "root_cause": [
+      "Incorrect cron schedule format",
+      "Starting deadline seconds too short",
+      "Job pod failing to start",
+      "SuccessfulJobsHistoryLimit not set"
+    ],
+    "diagnosis": [
+      "Check CronJob status: kubectl get cronjob",
+      "Review job history: kubectl get jobs",
+      "Examine cron schedule format",
+      "Check job pod logs"
+    ],
+    "fix": [
+      "Fix cron schedule format",
+      "Increase startingDeadlineSeconds",
+      "Debug and fix job pod failures",
+      "Set history limits for jobs"
+    ],
+    "prevention": [
+      "Validate cron schedule format",
+      "Test CronJob manually",
+      "Set appropriate history limits",
+      "Monitor CronJob execution"
+    ],
+    "tags": ["kubernetes", "cronjob", "scheduling", "jobs"]
+  },
+  {
+    "id": "k8s-statefulset",
+    "title": "StatefulSet rolling update stuck",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 64,
+    "symptoms": [
+      "StatefulSet update not progressing",
+      "Pods stuck in terminating state",
+      "Rolling update paused",
+      "Old pods not being replaced"
+    ],
+    "root_cause": [
+      "Pod deletion stuck due to volume attachment",
+      "Readiness probe failing",
+      "Partition update strategy misconfigured",
+      "PDB preventing pod termination"
+    ],
+    "diagnosis": [
+      "Check StatefulSet status: kubectl describe statefulset",
+      "Review pod status and events",
+      "Examine PVC attachment",
+      "Check PDB configuration"
+    ],
+    "fix": [
+      "Force delete stuck pods if safe",
+      "Fix readiness probe configuration",
+      "Adjust partition strategy",
+      "Update PDB to allow rolling update"
+    ],
+    "prevention": [
+      "Test StatefulSet updates in staging",
+      "Configure appropriate PDBs",
+      "Use proper update strategies",
+      "Monitor rolling update progress"
+    ],
+    "tags": ["kubernetes", "statefulset", "updates", "storage"]
+  },
+  {
+    "id": "k8s-daemonset",
+    "title": "DaemonSet pods not running on all nodes",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 60,
+    "symptoms": [
+      "DaemonSet not covering all nodes",
+      "Pods missing on specific nodes",
+      "Desired number not met",
+      "Node selector or taint issues"
+    ],
+    "root_cause": [
+      "Node selector not matching all nodes",
+      "Taints preventing pod scheduling",
+      "Resource constraints on nodes",
+      "DaemonSet misconfigured"
+    ],
+    "diagnosis": [
+      "Check DaemonSet status: kubectl get daemonset",
+      "List pods: kubectl get pods -o wide",
+      "Review node labels and taints",
+      "Check node resource availability"
+    ],
+    "fix": [
+      "Update node selector to match required nodes",
+      "Add tolerations for node taints",
+      "Fix resource constraints",
+      "Review DaemonSet configuration"
+    ],
+    "prevention": [
+      "Use appropriate node selectors",
+      "Add tolerations for common taints",
+      "Monitor DaemonSet coverage",
+      "Test DaemonSet on new nodes"
+    ],
+    "tags": ["kubernetes", "daemonset", "scheduling", "nodes"]
+  },
+  {
+    "id": "k8s-secret",
+    "title": "Secrets not mounted or accessible in pods",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 67,
+    "symptoms": [
+      "Pods unable to access secrets",
+      "Secret volume mount failing",
+      "Environment variables from secrets not populated",
+      "Application errors reading secrets"
+    ],
+    "root_cause": [
+      "Secret not created or in wrong namespace",
+      "Incorrect secret reference in pod spec",
+      "RBAC permissions missing",
+      "Secret volume mount path incorrect"
+    ],
+    "diagnosis": [
+      "Check secret exists: kubectl get secret",
+      "Review pod spec for secret references",
+      "Verify secret in correct namespace",
+      "Check RBAC permissions"
+    ],
+    "fix": [
+      "Create secret in correct namespace",
+      "Fix secret reference in pod spec",
+      "Grant RBAC permissions",
+      "Correct volume mount path"
+    ],
+    "prevention": [
+      "Use external secret operators",
+      "Document secret requirements",
+      "Test secret access in staging",
+      "Consider using secret management tools"
+    ],
+    "tags": ["kubernetes", "secrets", "rbac", "configuration"]
+  },
+  {
+    "id": "k8s-helm-release",
+    "title": "Helm release failing to upgrade",
+    "tool": "Helm",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 71,
+    "symptoms": [
+      "Helm upgrade failing with errors",
+      "Release in failed state",
+      "Rollback not working",
+      "Resources not updating"
+    ],
+    "root_cause": [
+      "Invalid values in values.yaml",
+      "Chart version incompatibility",
+      "Resource conflicts with existing state",
+      "Hooks failing during upgrade"
+    ],
+    "diagnosis": [
+      "Check Helm release status: helm status <release>",
+      "Review Helm upgrade logs",
+      "Validate values against chart schema",
+      "Check hook pod logs"
+    ],
+    "fix": [
+      "Fix invalid values in values.yaml",
+      "Use compatible chart version",
+      "Resolve resource conflicts",
+      "Debug and fix hook failures"
+    ],
+    "prevention": [
+      "Validate values before upgrade",
+      "Use --dry-run flag before upgrade",
+      "Test upgrades in staging",
+      "Implement helm diff for changes"
+    ],
+    "tags": ["kubernetes", "helm", "deployment", "upgrades"]
+  },
+  {
+    "id": "k8s-api-server",
+    "title": "Kubernetes API server unreachable or slow",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P1",
+    "popularity": 79,
+    "symptoms": [
+      "kubectl commands timing out",
+      "API server returning 503 errors",
+      "Cluster operations failing",
+      "Controller manager unable to communicate"
+    ],
+    "root_cause": [
+      "API server resource exhaustion",
+      "etcd cluster issues",
+      "Network problems between components",
+      "Too many watch requests"
+    ],
+    "diagnosis": [
+      "Check API server logs",
+      "Monitor API server resource usage",
+      "Test etcd cluster health",
+      "Review network connectivity"
+    ],
+    "fix": [
+      "Scale API server resources",
+      "Fix etcd cluster issues",
+      "Resolve network problems",
+      "Reduce watch requests"
+    ],
+    "prevention": [
+      "Monitor API server performance",
+      "Scale etcd cluster appropriately",
+      "Use network policies wisely",
+      "Implement API server rate limiting"
+    ],
+    "tags": ["kubernetes", "api-server", "etcd", "control-plane"]
+  },
+  {
+    "id": "k8s-cert-expiry",
+    "title": "Kubernetes certificates expiring causing cluster issues",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P1",
+    "popularity": 73,
+    "symptoms": [
+      "kubectl commands failing with certificate errors",
+      "API server rejecting connections",
+      "Components unable to authenticate",
+      "Cluster operations failing"
+    ],
+    "root_cause": [
+      "API server certificate expired",
+      "kubelet certificates expired",
+      "Service account tokens expired",
+      "Certificate rotation not configured"
+    ],
+    "diagnosis": [
+      "Check certificate expiry: kubeadm certs check-expiration",
+      "Review kubectl error messages",
+      "Check component logs",
+      "Verify certificate rotation settings"
+    ],
+    "fix": [
+      "Renew expired certificates: kubeadm certs renew all",
+      "Restart affected components",
+      "Update kubelet certificates",
+      "Configure automatic certificate rotation"
+    ],
+    "prevention": [
+      "Enable automatic certificate rotation",
+      "Monitor certificate expiry dates",
+      "Set up expiry alerts",
+      "Document certificate renewal procedures"
+    ],
+    "tags": ["kubernetes", "certificates", "security", "authentication"]
+  },
+  {
+    "id": "k8s-admission",
+    "title": "Admission controllers blocking valid deployments",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 62,
+    "symptoms": [
+      "Deployments rejected with admission errors",
+      "Valid resources failing to create",
+      "Webhook timeout errors",
+      "Policy violation messages"
+    ],
+    "root_cause": [
+      "Validating webhook misconfigured",
+      "Policy rules too restrictive",
+      "Webhook endpoint unreachable",
+      "Resource not meeting policy requirements"
+    ],
+    "diagnosis": [
+      "Check admission webhook status",
+      "Review webhook logs",
+      "Examine policy rules",
+      "Test webhook endpoint connectivity"
+    ],
+    "fix": [
+      "Fix webhook configuration",
+      "Adjust policy rules",
+      "Ensure webhook endpoint available",
+      "Update resource to meet requirements"
+    ],
+    "prevention": [
+      "Test admission controllers in staging",
+      "Document policy requirements",
+      "Monitor webhook health",
+      "Use policy validation tools"
+    ],
+    "tags": ["kubernetes", "admission", "webhooks", "policies"]
+  },
+  {
+    "id": "k8s-metrics-server",
+    "title": "Metrics server not reporting pod metrics",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P3",
+    "popularity": 57,
+    "symptoms": [
+      "kubectl top pods not working",
+      "HPA not scaling based on metrics",
+      "No metrics available in dashboard",
+      "Metrics server errors"
+    ],
+    "root_cause": [
+      "Metrics server not installed",
+      "Metrics server pod failing",
+      "RBAC permissions insufficient",
+      "Kubelet certificates not trusted"
+    ],
+    "diagnosis": [
+      "Check metrics server deployment",
+      "Review metrics server logs",
+      "Verify RBAC permissions",
+      "Check kubelet configuration"
+    ],
+    "fix": [
+      "Install or reinstall metrics server",
+      "Fix metrics server pod issues",
+      "Update RBAC permissions",
+      "Configure kubelet to trust metrics server"
+    ],
+    "prevention": [
+      "Install metrics server in all clusters",
+      "Monitor metrics server health",
+      "Document metrics server setup",
+      "Test metrics after cluster creation"
+    ],
+    "tags": ["kubernetes", "metrics", "monitoring", "hpa"]
   }
 ]

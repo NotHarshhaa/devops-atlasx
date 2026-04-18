@@ -340,5 +340,317 @@
       "Use process managers for proper service lifecycle"
     ],
     "tags": ["networking", "ports", "conflicts", "troubleshooting"]
+  },
+  {
+    "id": "haproxy-timeout",
+    "title": "HAProxy timeout causing connection drops",
+    "tool": "HAProxy",
+    "category": "Networking",
+    "severity": "P2",
+    "popularity": 68,
+    "symptoms": [
+      "Connections dropped unexpectedly",
+      "504 Gateway Timeout errors",
+      "Long-running requests failing",
+      "Backend connections timing out"
+    ],
+    "root_cause": [
+      "Timeout settings too low for application",
+      "Backend response time exceeding timeout",
+      "Client timeout too short",
+      "Connect timeout misconfigured"
+    ],
+    "diagnosis": [
+      "Check HAProxy logs for timeout errors",
+      "Review timeout configuration",
+      "Monitor backend response times",
+      "Analyze connection patterns"
+    ],
+    "fix": [
+      "Increase timeout values in haproxy.cfg:",
+      "timeout connect 10s, timeout client 300s, timeout server 300s",
+      "Optimize backend application performance",
+      "Adjust based on application requirements"
+    ],
+    "prevention": [
+      "Set timeouts based on application requirements",
+      "Monitor timeout errors",
+      "Test timeout configuration",
+      "Document timeout requirements"
+    ],
+    "tags": ["haproxy", "timeout", "load-balancer", "proxy"]
+  },
+  {
+    "id": "traefik-routing",
+    "title": "Traefik routing not working for services",
+    "tool": "Traefik",
+    "category": "Networking",
+    "severity": "P2",
+    "popularity": 61,
+    "symptoms": [
+      "Services not accessible through Traefik",
+      "404 errors for valid routes",
+      "Dynamic configuration not loading",
+      "SSL termination not working"
+    ],
+    "root_cause": [
+      "Incorrect router configuration",
+      "Service labels not matching",
+      "Middleware blocking requests",
+      "Certificate configuration issues"
+    ],
+    "diagnosis": [
+      "Check Traefik dashboard for routing rules",
+      "Review router and service configuration",
+      "Check Traefik logs for errors",
+      "Verify middleware configuration"
+    ],
+    "fix": [
+      "Fix router rule to match service",
+      "Update service labels",
+      "Adjust or remove blocking middleware",
+      "Fix certificate configuration"
+    ],
+    "prevention": [
+      "Test routing configuration in staging",
+      "Use Traefik dashboard for monitoring",
+      "Document routing rules",
+      "Validate configuration before deployment"
+    ],
+    "tags": ["traefik", "routing", "proxy", "load-balancer"]
+  },
+  {
+    "id": "vpn-connection",
+    "title": "VPN connection dropping intermittently",
+    "tool": "VPN",
+    "category": "Networking",
+    "severity": "P2",
+    "popularity": 65,
+    "symptoms": [
+      "VPN connection dropping frequently",
+      "Unable to reconnect to VPN",
+      "Slow VPN performance",
+      "Authentication failures"
+    ],
+    "root_cause": [
+      "Network instability",
+      "VPN server overloaded",
+      "Client configuration issues",
+      "Firewall blocking VPN traffic"
+    ],
+    "diagnosis": [
+      "Check VPN server logs",
+      "Review client connection logs",
+      "Test network stability",
+      "Verify firewall rules"
+    ],
+    "fix": [
+      "Fix network stability issues",
+      "Scale VPN server capacity",
+      "Update client configuration",
+      "Configure firewall to allow VPN traffic"
+    ],
+    "prevention": [
+      "Monitor VPN connection stability",
+      "Implement automatic reconnection",
+      "Use reliable VPN protocols",
+      "Document VPN configuration"
+    ],
+    "tags": ["vpn", "connectivity", "networking", "remote-access"]
+  },
+  {
+    "id": "tcp-tuning",
+    "title": "TCP settings causing poor network performance",
+    "tool": "TCP",
+    "category": "Networking",
+    "severity": "P3",
+    "popularity": 56,
+    "symptoms": [
+      "Slow network throughput",
+      "High latency for TCP connections",
+      "Connection drops under load",
+      "Poor performance for high-latency links"
+    ],
+    "root_cause": [
+      "TCP window size too small",
+      "TCP congestion algorithm not optimized",
+      "TCP keepalive settings incorrect",
+      "MTU size mismatch"
+    ],
+    "diagnosis": [
+      "Measure network throughput with iperf",
+      "Check TCP settings: sysctl -a | grep tcp",
+      "Analyze TCP statistics",
+      "Test with different MTU sizes"
+    ],
+    "fix": [
+      "Increase TCP window size: sysctl -w net.ipv4.tcp_window_scaling=1",
+      "Optimize congestion algorithm for workload",
+      "Adjust TCP keepalive settings",
+      "Set correct MTU for network"
+    ],
+    "prevention": [
+      "Optimize TCP settings for workload",
+      "Monitor network performance",
+      "Document TCP configuration",
+      "Test network tuning changes"
+    ],
+    "tags": ["tcp", "performance", "tuning", "networking"]
+  },
+  {
+    "id": "proxy-configuration",
+    "title": "Proxy configuration blocking application traffic",
+    "tool": "Proxy",
+    "category": "Networking",
+    "severity": "P2",
+    "popularity": 63,
+    "symptoms": [
+      "Applications unable to reach external services",
+      "Connection timeouts through proxy",
+      "Proxy authentication failures",
+      "SSL/TLS issues with proxy"
+    ],
+    "root_cause": [
+      "Incorrect proxy settings",
+      "Proxy not allowing required traffic",
+      "Authentication credentials invalid",
+      "SSL inspection breaking connections"
+    ],
+    "diagnosis": [
+      "Test direct connection bypassing proxy",
+      "Review proxy configuration",
+      "Check proxy logs for denied requests",
+      "Verify authentication credentials"
+    ],
+    "fix": [
+      "Update proxy configuration settings",
+      "Allow required traffic in proxy",
+      "Update authentication credentials",
+      "Configure SSL bypass if needed"
+    ],
+    "prevention": [
+      "Document proxy requirements",
+      "Test proxy configuration",
+      "Monitor proxy logs",
+      "Use proxy auto-configuration"
+    ],
+    "tags": ["proxy", "configuration", "networking", "security"]
+  },
+  {
+    "id": "ip-address-exhaustion",
+    "title": "IP address exhaustion in subnet",
+    "tool": "Networking",
+    "category": "Networking",
+    "severity": "P2",
+    "popularity": 59,
+    "symptoms": [
+      "Unable to assign IP addresses to new instances",
+      "DHCP failing to allocate addresses",
+      "IP address conflicts",
+      "Network devices unable to obtain IP"
+    ],
+    "root_cause": [
+      "Subnet too small for workload",
+      "IP addresses not released properly",
+      "Stale IP address reservations",
+      "Too many devices in subnet"
+    ],
+    "diagnosis": [
+      "Check IP address usage in subnet",
+      "Review DHCP lease table",
+      "Identify stale reservations",
+      "Analyze IP allocation patterns"
+    ],
+    "fix": [
+      "Expand subnet size",
+      "Clean up stale IP reservations",
+      "Implement proper IP address management",
+      "Create additional subnets"
+    ],
+    "prevention": [
+      "Plan subnet sizing appropriately",
+      "Monitor IP address usage",
+      "Implement IP address lifecycle management",
+      "Use DHCP lease time optimization"
+    ],
+    "tags": ["networking", "ip-address", "subnet", "dhcp"]
+  },
+  {
+    "id": "mtu-mismatch",
+    "title": "MTU mismatch causing packet fragmentation or drops",
+    "tool": "Networking",
+    "category": "Networking",
+    "severity": "P2",
+    "popularity": 58,
+    "symptoms": [
+      "Intermittent connection failures",
+      "Slow network performance",
+      "Packet loss for large packets",
+      "Connection works for small data but fails for large transfers"
+    ],
+    "root_cause": [
+      "MTU size mismatch between network devices",
+      "Path MTU discovery not working",
+      "VLAN tags adding overhead",
+      "VPN encapsulation reducing effective MTU"
+    ],
+    "diagnosis": [
+      "Check MTU settings on interfaces",
+      "Test with ping -f -l to find MTU",
+      "Review path MTU discovery",
+      "Analyze packet captures"
+    ],
+    "fix": [
+      "Align MTU sizes across network path",
+      "Enable or fix path MTU discovery",
+      "Reduce MTU to account for encapsulation",
+      "Implement TCP MSS clamping"
+    ],
+    "prevention": [
+      "Document MTU requirements",
+      "Test MTU configuration",
+      "Use consistent MTU across network",
+      "Monitor for MTU issues"
+    ],
+    "tags": ["networking", "mtu", "performance", "troubleshooting"]
+  },
+  {
+    "id": "ipv6-transition",
+    "title": "IPv6 transition issues causing connectivity problems",
+    "tool": "Networking",
+    "category": "Networking",
+    "severity": "P3",
+    "popularity": 54,
+    "symptoms": [
+      "Dual-stack networks not working correctly",
+      "IPv6 connectivity failing",
+      "Applications preferring IPv4 over IPv6",
+      "DNS AAAA record resolution issues"
+    ],
+    "root_cause": [
+      "Incorrect IPv6 configuration",
+      "Missing IPv6 routing",
+      "Firewall blocking IPv6 traffic",
+      "DNS not returning AAAA records"
+    ],
+    "diagnosis": [
+      "Check IPv6 configuration on interfaces",
+      "Test IPv6 connectivity",
+      "Review IPv6 routing tables",
+      "Verify DNS AAAA records"
+    ],
+    "fix": [
+      "Fix IPv6 configuration",
+      "Add IPv6 routes",
+      "Update firewall rules for IPv6",
+      "Configure DNS for IPv6"
+    ],
+    "prevention": [
+      "Plan IPv6 deployment carefully",
+      "Test dual-stack configuration",
+      "Document IPv6 requirements",
+      "Monitor IPv6 connectivity"
+    ],
+    "tags": ["networking", "ipv6", "dual-stack", "transition"]
   }
 ]

@@ -380,5 +380,356 @@
       "Implement cluster monitoring"
     ],
     "tags": ["elasticsearch", "cluster", "health", "monitoring"]
+  },
+  {
+    "id": "argocd-sync-fail",
+    "title": "ArgoCD sync failing with out-of-sync state",
+    "tool": "ArgoCD",
+    "category": "CI/CD",
+    "severity": "P2",
+    "popularity": 71,
+    "symptoms": [
+      "Applications showing out-of-sync in ArgoCD UI",
+      "Auto-sync not applying changes automatically",
+      "Sync operation fails with diff errors",
+      "Git changes not reflected in cluster"
+    ],
+    "root_cause": [
+      "Drift between Git state and cluster state",
+      "Invalid manifests in Git repository",
+      "RBAC permissions insufficient for sync",
+      "Kustomize/Helm rendering errors"
+    ],
+    "diagnosis": [
+      "Check ArgoCD application status: argocd app get <app-name>",
+      "Review sync logs in ArgoCD UI",
+      "Validate manifests locally: kubectl apply --dry-run=server",
+      "Check ArgoCD controller logs"
+    ],
+    "fix": [
+      "Fix invalid manifests in Git repository",
+      "Manually sync with --force flag if needed: argocd app sync <app-name> --force",
+      "Update RBAC permissions for ArgoCD service account",
+      "Fix Kustomize/Helm configuration errors"
+    ],
+    "prevention": [
+      "Enable auto-sync with self-heal enabled",
+      "Implement pre-sync validation hooks",
+      "Use policy-based constraints",
+      "Monitor drift detection alerts"
+    ],
+    "tags": ["argocd", "gitops", "kubernetes", "sync"]
+  },
+  {
+    "id": "circleci-timeout",
+    "title": "CircleCI jobs timing out during long-running tests",
+    "tool": "CircleCI",
+    "category": "CI/CD",
+    "severity": "P2",
+    "popularity": 64,
+    "symptoms": [
+      "Jobs failing with 'no output received' timeout",
+      "Tests running fine locally but timing out in CI",
+      "Build logs show no activity before timeout",
+      "Only specific jobs affected"
+    ],
+    "root_cause": [
+      "Default timeout too short for test suite",
+      "Tests hanging waiting for external dependencies",
+      "Insufficient resources allocated to executor",
+      "Network issues preventing test completion"
+    ],
+    "diagnosis": [
+      "Check job execution time in CircleCI dashboard",
+      "Review test logs for hanging operations",
+      "Monitor resource usage during job execution",
+      "Test external dependency availability"
+    ],
+    "fix": [
+      "Increase timeout in config.yml: jobs: test: timeout: 3600",
+      "Add external service mocks or wait loops",
+      "Optimize test suite to run faster",
+      "Use parallelism to distribute test load"
+    ],
+    "prevention": [
+      "Set appropriate timeouts based on test duration",
+      "Implement test suite optimization",
+      "Use service containers for dependencies",
+      "Monitor job duration trends"
+    ],
+    "tags": ["circleci", "ci", "timeout", "testing"]
+  },
+  {
+    "id": "azure-devops-agent",
+    "title": "Azure DevOps self-hosted agents unable to connect",
+    "tool": "Azure DevOps",
+    "category": "CI/CD",
+    "severity": "P2",
+    "popularity": 60,
+    "symptoms": [
+      "Agents showing offline in Azure DevOps pool",
+      "Builds queued but not picked up by agents",
+      "Agent configuration failing to register",
+      "Authentication errors in agent logs"
+    ],
+    "root_cause": [
+      "Personal Access Token expired or invalid",
+      "Network connectivity issues to Azure DevOps",
+      "Agent service not running properly",
+      "Firewall blocking agent communication"
+    ],
+    "diagnosis": [
+      "Check agent service status on host machine",
+      "Review agent logs for authentication errors",
+      "Test network connectivity to Azure DevOps",
+      "Verify PAT token validity"
+    ],
+    "fix": [
+      "Regenerate PAT token and update agent configuration",
+      "Restart agent service",
+      "Configure firewall rules to allow Azure DevOps communication",
+      "Re-register agent with correct pool"
+    ],
+    "prevention": [
+      "Use PAT tokens with appropriate expiry",
+      "Monitor agent health and connectivity",
+      "Implement agent auto-recovery mechanisms",
+      "Document agent configuration procedures"
+    ],
+    "tags": ["azure-devops", "ci", "agents", "self-hosted"]
+  },
+  {
+    "id": "bitbucket-pipeline-fail",
+    "title": "Bitbucket Pipelines failing with cache errors",
+    "tool": "Bitbucket Pipelines",
+    "category": "CI/CD",
+    "severity": "P2",
+    "popularity": 56,
+    "symptoms": [
+      "Pipelines failing with cache download/upload errors",
+      "Builds slower due to missing cache",
+      "Cache size limit exceeded errors",
+      "Inconsistent cache behavior across branches"
+    ],
+    "root_cause": [
+      "Cache key configuration incorrect",
+      "Cache size exceeding Bitbucket limits",
+      "Cache corruption from previous failed builds",
+      "Network issues during cache operations"
+    ],
+    "diagnosis": [
+      "Review pipeline logs for cache errors",
+      "Check cache configuration in bitbucket-pipelines.yml",
+      "Monitor cache size usage",
+      "Test cache key generation"
+    ],
+    "fix": [
+      "Fix cache key configuration to include relevant dependencies",
+      "Implement cache cleanup strategy",
+      "Use custom cache scripts for better control",
+      "Split large caches into smaller chunks"
+    ],
+    "prevention": [
+      "Use cache keys based on dependency files",
+      "Implement cache size monitoring",
+      "Regularly clean up old caches",
+      "Test cache configuration in PR builds"
+    ],
+    "tags": ["bitbucket", "ci", "cache", "pipelines"]
+  },
+  {
+    "id": "gitlab-runner-cache",
+    "title": "GitLab Runner cache not persisting between jobs",
+    "tool": "GitLab CI",
+    "category": "CI/CD",
+    "severity": "P3",
+    "popularity": 58,
+    "symptoms": [
+      "Dependencies re-downloaded on every job",
+      "Build times significantly longer than expected",
+      "Cache not found errors in job logs",
+      "Different behavior between runners"
+    ],
+    "root_cause": [
+      "Cache configuration missing in .gitlab-ci.yml",
+      "Runner not configured with distributed cache",
+      "Cache path permissions incorrect",
+      "Cache key not matching across jobs"
+    ],
+    "diagnosis": [
+      "Check .gitlab-ci.yml cache configuration",
+      "Review runner config.toml for cache settings",
+      "Verify cache directory permissions",
+      "Test cache key generation"
+    ],
+    "fix": [
+      "Add cache configuration to .gitlab-ci.yml: cache: key: ${CI_COMMIT_REF_SLUG} paths: - node_modules/ - .npm/",
+      "Configure S3 or distributed cache for runners",
+      "Fix cache directory permissions",
+      "Use consistent cache keys"
+    ],
+    "prevention": [
+      "Always define cache for dependencies",
+      "Use distributed cache for multiple runners",
+      "Monitor cache hit rates",
+      "Document cache strategy"
+    ],
+    "tags": ["gitlab", "ci", "cache", "runners"]
+  },
+  {
+    "id": "sonarqube-timeout",
+    "title": "SonarQube analysis timing out in CI pipeline",
+    "tool": "SonarQube",
+    "category": "CI/CD",
+    "severity": "P3",
+    "popularity": 55,
+    "symptoms": [
+      "Code quality analysis step timing out",
+      "SonarQube scanner unable to complete analysis",
+      "Large codebases causing timeout issues",
+      "Intermittent timeout failures"
+    ],
+    "root_cause": [
+      "Analysis timeout too short for codebase size",
+      "SonarQube server under-provisioned",
+      "Network issues between CI and SonarQube",
+      "Too many files in analysis scope"
+    ],
+    "diagnosis": [
+      "Check SonarQube server resource usage",
+      "Review analysis timeout configuration",
+      "Test network connectivity to SonarQube",
+      "Monitor analysis duration trends"
+    ],
+    "fix": [
+      "Increase analysis timeout in scanner configuration",
+      "Scale SonarQube server resources",
+      "Optimize analysis scope with exclusions",
+      "Use incremental analysis for faster scans"
+    ],
+    "prevention": [
+      "Set appropriate timeouts based on codebase size",
+      "Monitor SonarQube server performance",
+      "Use incremental analysis for large projects",
+      "Optimize analysis configuration"
+    ],
+    "tags": ["sonarqube", "ci", "quality", "analysis"]
+  },
+  {
+    "id": "jfrog-artifactory",
+    "title": "Artifactory repository unavailable causing build failures",
+    "tool": "JFrog Artifactory",
+    "category": "CI/CD",
+    "severity": "P1",
+    "popularity": 68,
+    "symptoms": [
+      "Builds failing with repository connection errors",
+      "Artifact upload/download timeouts",
+      "Artifactory UI slow or unresponsive",
+      "High memory usage on Artifactory server"
+    ],
+    "root_cause": [
+      "Artifactory server out of memory",
+      "Database connection pool exhausted",
+      "Storage full on Artifactory server",
+      "Too many concurrent requests"
+    ],
+    "diagnosis": [
+      "Check Artifactory server logs",
+      "Monitor system resources on Artifactory host",
+      "Review storage usage",
+      "Check database connection status"
+    ],
+    "fix": [
+      "Increase Artifactory JVM heap size",
+      "Clean up old artifacts and free storage",
+      "Scale Artifactory horizontally",
+      "Implement repository cleanup policies"
+    ],
+    "prevention": [
+      "Monitor Artifactory resource usage",
+      "Implement automated cleanup policies",
+      "Use repository replication for high availability",
+      "Set up alerts for resource exhaustion"
+    ],
+    "tags": ["artifactory", "repository", "storage", "ci-cd"]
+  },
+  {
+    "id": "travis-ci-fail",
+    "title": "Travis CI builds failing with dependency resolution errors",
+    "tool": "Travis CI",
+    "category": "CI/CD",
+    "severity": "P2",
+    "popularity": 52,
+    "symptoms": [
+      "Builds failing during dependency installation",
+      "Package manager unable to resolve dependencies",
+      "Works locally but fails in Travis CI",
+      "Different behavior across branches"
+    ],
+    "root_cause": [
+      "Dependency version conflicts in .travis.yml",
+      "Outdated base image or runtime",
+      "Network issues accessing package repositories",
+      "Cache corruption from previous builds"
+    ],
+    "diagnosis": [
+      "Review build logs for dependency errors",
+      "Check .travis.yml dependency configuration",
+      "Test dependency resolution locally",
+      "Clear Travis CI cache"
+    ],
+    "fix": [
+      "Update dependency versions in .travis.yml",
+      "Pin specific versions to avoid conflicts",
+      "Update base image or runtime version",
+      "Clear cache and rebuild"
+    ],
+    "prevention": [
+      "Use dependency lock files",
+      "Keep base images updated",
+      "Test dependency changes locally",
+      "Use dependency management tools"
+    ],
+    "tags": ["travis-ci", "ci", "dependencies", "build"]
+  },
+  {
+    "id": "teamcity-agent",
+    "title": "TeamCity build agents showing as disconnected",
+    "tool": "TeamCity",
+    "category": "CI/CD",
+    "severity": "P2",
+    "popularity": 54,
+    "symptoms": [
+      "Build agents showing disconnected in TeamCity",
+      "Builds queued but not assigned to agents",
+      "Agent unable to communicate with server",
+      "Authentication failures on agent"
+    ],
+    "root_cause": [
+      "Agent configuration incorrect",
+      "Network connectivity issues between agent and server",
+      "Agent service not running",
+      "Agent authorization token expired"
+    ],
+    "diagnosis": [
+      "Check agent logs for connection errors",
+      "Verify network connectivity to TeamCity server",
+      "Review agent configuration",
+      "Check agent authorization status"
+    ],
+    "fix": [
+      "Update agent configuration with correct server URL",
+      "Fix network connectivity issues",
+      "Restart agent service",
+      "Re-authorize agent with new token"
+    ],
+    "prevention": [
+      "Monitor agent connectivity status",
+      "Use agent pools for redundancy",
+      "Implement automatic agent recovery",
+      "Document agent configuration procedures"
+    ],
+    "tags": ["teamcity", "ci", "agents", "build"]
   }
 ]

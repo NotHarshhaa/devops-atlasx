@@ -391,5 +391,317 @@
       "Use dual-stack networking for compatibility"
     ],
     "tags": ["docker", "ipv6", "networking", "configuration"]
+  },
+  {
+    "id": "docker-security-scan",
+    "title": "Docker images failing security scans with vulnerabilities",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P2",
+    "popularity": 75,
+    "symptoms": [
+      "Security scan failing with high/critical vulnerabilities",
+      "CI pipeline blocked by security policy",
+      "Base images containing known CVEs",
+      "Third-party packages with security issues"
+    ],
+    "root_cause": [
+      "Using outdated base images",
+      "Not updating dependencies regularly",
+      "Installing unnecessary packages",
+      "Not running vulnerability scans regularly"
+    ],
+    "diagnosis": [
+      "Run docker scan to identify vulnerabilities",
+      "Check base image version and release notes",
+      "Review installed packages in image",
+      "Analyze security scan reports"
+    ],
+    "fix": [
+      "Update base image to latest secure version",
+      "Update vulnerable packages in Dockerfile",
+      "Use minimal base images like alpine or distroless",
+      "Implement automated security scanning in CI"
+    ],
+    "prevention": [
+      "Use Dependabot or similar tools for base image updates",
+      "Run security scans on every build",
+      "Implement vulnerability patching policies",
+      "Use signed and verified images"
+    ],
+    "tags": ["docker", "security", "vulnerabilities", "scanning"]
+  },
+  {
+    "id": "docker-context",
+    "title": "Docker build context too large causing slow builds",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P3",
+    "popularity": 63,
+    "symptoms": [
+      "Docker build sending large context to daemon",
+      "Builds taking excessive time",
+      "Network bandwidth consumed during build",
+      "Docker daemon disk filling up"
+    ],
+    "root_cause": [
+      ".dockerignore not configured or incomplete",
+      "Build context includes unnecessary files",
+      "Building from root directory of large project",
+      "Node_modules or dependencies included in context"
+    ],
+    "diagnosis": [
+      "Check build context size: du -sh .",
+      "Review docker build output for context size",
+      "Inspect .dockerignore file",
+      "List files being sent in build context"
+    ],
+    "fix": [
+      "Create or update .dockerignore file:",
+      "node_modules\n.git\n*.md\ntest\n.env",
+      "Build from specific subdirectory",
+      "Use .dockerignore patterns to exclude unnecessary files"
+    ],
+    "prevention": [
+      "Always use .dockerignore in projects",
+      "Document build context best practices",
+      "Monitor build context size in CI",
+      "Use multi-stage builds to reduce context"
+    ],
+    "tags": ["docker", "performance", "build-context", "optimization"]
+  },
+  {
+    "id": "docker-signal",
+    "title": "Containers not responding to SIGTERM gracefully",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P2",
+    "popularity": 66,
+    "symptoms": [
+      "Container killed immediately on stop",
+      "Data loss during container shutdown",
+      "Database connections not closed properly",
+      "In-flight requests dropped"
+    ],
+    "root_cause": [
+      "Application not handling SIGTERM signal",
+      "Using ENTRYPOINT script that doesn't pass signals",
+      "Process not running in foreground",
+      "Signal handler not implemented in application"
+    ],
+    "diagnosis": [
+      "Test container stop: docker stop <container>",
+      "Check application logs during shutdown",
+      "Review ENTRYPOINT/CMD configuration",
+      "Test signal handling manually"
+    ],
+    "fix": [
+      "Implement signal handler in application code",
+      "Use exec form of CMD/ENTRYPOINT to pass signals",
+      "Add STOPSIGNAL directive in Dockerfile",
+      "Use --stop-timeout for graceful shutdown"
+    ],
+    "prevention": [
+      "Always implement graceful shutdown in applications",
+      "Test shutdown procedures in CI",
+      "Use exec form for ENTRYPOINT/CMD",
+      "Document shutdown behavior"
+    ],
+    "tags": ["docker", "signals", "shutdown", "graceful"]
+  },
+  {
+    "id": "docker-overlay",
+    "title": "Overlay2 driver performance issues on high I/O workloads",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P3",
+    "popularity": 57,
+    "symptoms": [
+      "Container filesystem operations slow",
+      "High I/O wait on Docker host",
+      "Container startup delays",
+      "Disk performance degradation"
+    ],
+    "root_cause": [
+      "Overlay2 overhead for layered filesystem",
+      "Too many layers in image",
+      "High file creation/deletion rate",
+      "Disk not optimized for overlay filesystem"
+    ],
+    "diagnosis": [
+      "Monitor I/O performance with iostat",
+      "Check Docker daemon logs",
+      "Analyze layer count with docker history",
+      "Test with different storage drivers"
+    ],
+    "fix": [
+      "Reduce number of layers in Dockerfile",
+      "Use volumes for high I/O directories",
+      "Consider alternative storage drivers",
+      "Optimize disk for overlay filesystem performance"
+    ],
+    "prevention": [
+      "Minimize layers in Dockerfiles",
+      "Use volumes for write-heavy workloads",
+      "Monitor storage driver performance",
+      "Test storage driver for workload"
+    ],
+    "tags": ["docker", "storage", "performance", "overlay2"]
+  },
+  {
+    "id": "docker-privileged",
+    "title": "Privileged containers creating security risks",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P1",
+    "popularity": 69,
+    "symptoms": [
+      "Containers running with --privileged flag",
+      "Containers having host access",
+      "Security audit failures",
+      "Potential container escape vulnerabilities"
+    ],
+    "root_cause": [
+      "Using --privileged flag unnecessarily",
+      "Misunderstanding container isolation requirements",
+      "Legacy applications requiring privileged access",
+      "Copy-pasting insecure Docker run commands"
+    ],
+    "diagnosis": [
+      "Check running containers: docker ps --format '{{.ID}} {{.Command}}'",
+      "Review Docker Compose files for privileged mode",
+      "Audit container configurations",
+      "Review Kubernetes pod security contexts"
+    ],
+    "fix": [
+      "Remove --privileged flag if not required",
+      "Use specific capabilities instead of privileged:",
+      "docker run --cap-add=NET_ADMIN --cap-add=SYS_TIME",
+      "Implement proper security contexts"
+    ],
+    "prevention": [
+      "Never use --privileged in production",
+      "Use least privilege capabilities",
+      "Implement security policies",
+      "Audit container configurations regularly"
+    ],
+    "tags": ["docker", "security", "privileged", "capabilities"]
+  },
+  {
+    "id": "docker-resource",
+    "title": "Docker daemon resource exhaustion causing failures",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P2",
+    "popularity": 64,
+    "symptoms": [
+      "Docker commands hanging or timing out",
+      "Container operations failing",
+      "Docker daemon consuming excessive resources",
+      "System becoming unresponsive"
+    ],
+    "root_cause": [
+      "Too many containers running simultaneously",
+      "Docker daemon memory leak",
+      "Insufficient system resources",
+      "Container resource limits not set"
+    ],
+    "diagnosis": [
+      "Check Docker daemon resource usage",
+      "Monitor running container count",
+      "Review system resource utilization",
+      "Check Docker daemon logs"
+    ],
+    "fix": [
+      "Stop unnecessary containers",
+      "Restart Docker daemon",
+      "Increase system resources",
+      "Set resource limits on containers"
+    ],
+    "prevention": [
+      "Monitor Docker daemon resource usage",
+      "Set resource limits on containers",
+      "Implement container lifecycle management",
+      "Regularly clean up unused containers"
+    ],
+    "tags": ["docker", "resources", "daemon", "performance"]
+  },
+  {
+    "id": "docker-multi-arch",
+    "title": "Multi-architecture Docker builds failing",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P3",
+    "popularity": 55,
+    "symptoms": [
+      "Buildx multi-arch builds failing",
+      "Images not working on target architecture",
+      "Cross-compilation errors",
+      "Platform-specific runtime failures"
+    ],
+    "root_cause": [
+      "Buildx not properly configured for multi-arch",
+      "QEMU not available for emulation",
+      "Platform-specific dependencies in code",
+      "Incorrect base image architecture"
+    ],
+    "diagnosis": [
+      "Check buildx builders: docker buildx ls",
+      "Verify QEMU installation",
+      "Test image on target architecture",
+      "Review Dockerfile for platform assumptions"
+    ],
+    "fix": [
+      "Create buildx builder with multi-arch support:",
+      "docker buildx create --use --driver=docker-container --name=multiarch-builder",
+      "Enable QEMU for emulation: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes",
+      "Use platform-agnostic base images"
+    ],
+    "prevention": [
+      "Test multi-arch builds regularly",
+      "Use platform-agnostic dependencies",
+      "Document multi-arch build process",
+      "Use buildx for cross-platform builds"
+    ],
+    "tags": ["docker", "multi-arch", "buildx", "cross-platform"]
+  },
+  {
+    "id": "docker-rootless",
+    "title": "Rootless Docker experiencing permission issues",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P3",
+    "popularity": 52,
+    "symptoms": [
+      "Rootless Docker daemon failing to start",
+      "Permission denied errors on volume mounts",
+      "Unable to bind privileged ports",
+      "Container networking issues"
+    ],
+    "root_cause": [
+      "User namespaces not configured",
+      "Incorrect UID/GID mappings",
+      "Missing subuid/subgid configuration",
+      "Network setup issues for rootless mode"
+    ],
+    "diagnosis": [
+      "Check subuid/subgid configuration",
+      "Review rootless Docker logs",
+      "Verify user namespace settings",
+      "Test Docker daemon start manually"
+    ],
+    "fix": [
+      "Configure subuid/subgid for user",
+      "Set correct UID/GID mappings",
+      "Use slirp4netns for user-mode networking",
+      "Follow rootless Docker installation guide"
+    ],
+    "prevention": [
+      "Follow official rootless Docker setup guide",
+      "Document rootless configuration",
+      "Test rootless setup thoroughly",
+      "Use supported distributions"
+    ],
+    "tags": ["docker", "rootless", "security", "permissions"]
   }
 ]

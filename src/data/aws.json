@@ -389,5 +389,473 @@
       "Set up CloudWatch alarms for throttled requests"
     ],
     "tags": ["aws", "dynamodb", "throttling", "capacity", "database"]
+  },
+  {
+    "id": "aws-vpc-peering",
+    "title": "VPC peering connection failing due to route table misconfiguration",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 65,
+    "symptoms": [
+      "Instances cannot communicate across peered VPCs",
+      "Connection timeout when accessing peered VPC resources",
+      "Peering connection shows active but no traffic flows",
+      "Route tables appear correct but routing fails"
+    ],
+    "root_cause": [
+      "Route tables not updated with peering routes",
+      "CIDR overlap between VPCs",
+      "Security groups blocking peered traffic",
+      "Peering connection in wrong acceptance state"
+    ],
+    "diagnosis": [
+      "Check VPC peering connection status",
+      "Review route table associations",
+      "Test connectivity with ping or telnet",
+      "Verify security group rules allow peered traffic"
+    ],
+    "fix": [
+      "Add routes to route tables pointing to peering connection",
+      "Fix CIDR overlap by redesigning VPC addressing",
+      "Update security group rules to allow traffic from peered VPC CIDR",
+      "Accept peering connection request if pending"
+    ],
+    "prevention": [
+      "Document VPC addressing scheme to avoid overlaps",
+      "Use Terraform/CloudFormation for consistent route table configuration",
+      "Implement VPC peering best practices",
+      "Test peering connectivity after setup"
+    ],
+    "tags": ["aws", "vpc", "networking", "peering"]
+  },
+  {
+    "id": "aws-sns-delivery",
+    "title": "SNS notifications not being delivered to subscribers",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 62,
+    "symptoms": [
+      "Subscribers not receiving SNS notifications",
+      "CloudWatch metrics show successful publishes but deliveries fail",
+      "Subscription showing pending confirmation",
+      "Notifications delayed or lost"
+    ],
+    "root_cause": [
+      "Subscription not confirmed by endpoint",
+      "Endpoint unreachable or invalid",
+      "IAM permissions insufficient for delivery",
+      "Message filtering blocking notifications"
+    ],
+    "diagnosis": [
+      "Check subscription status in SNS console",
+      "Review CloudWatch metrics for delivery failures",
+      "Test endpoint accessibility",
+      "Verify subscription filter policies"
+    ],
+    "fix": [
+      "Confirm subscription by clicking link in confirmation email",
+      "Update endpoint URL or configuration",
+      "Grant necessary IAM permissions for SNS service",
+      "Remove or adjust filter policies"
+    ],
+    "prevention": [
+      "Auto-confirm subscriptions where possible",
+      "Monitor SNS delivery metrics",
+      "Implement dead-letter queues for failed deliveries",
+      "Test notification delivery after setup"
+    ],
+    "tags": ["aws", "sns", "notifications", "messaging"]
+  },
+  {
+    "id": "aws-ecs-task",
+    "title": "ECS tasks failing to start with resource allocation errors",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 74,
+    "symptoms": [
+      "ECS tasks stuck in PROVISIONING state",
+      "Task definition fails to launch",
+      "Container cannot allocate required memory or CPU",
+      "Service unable to reach desired count"
+    ],
+    "root_cause": [
+      "Insufficient container instance resources",
+      "Task memory/CPU requirements exceed instance capacity",
+      "Task placement constraints blocking scheduling",
+      "Container instance not registered with cluster"
+    ],
+    "diagnosis": [
+      "Check ECS events for task failures",
+      "Review container instance resource utilization",
+      "Verify task placement constraints",
+      "Check container instance registration status"
+    ],
+    "fix": [
+      "Scale out container instances to meet resource demands",
+      "Reduce task memory/CPU requirements",
+      "Adjust or remove placement constraints",
+      "Register additional container instances with cluster"
+    ],
+    "prevention": [
+      "Use Auto Scaling for container instances",
+      "Right-size task resource requirements",
+      "Monitor ECS resource utilization",
+      "Implement capacity planning"
+    ],
+    "tags": ["aws", "ecs", "containers", "resources"]
+  },
+  {
+    "id": "aws-iam-role",
+    "title": "IAM role trust relationship misconfigured causing access denied",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P1",
+    "popularity": 76,
+    "symptoms": [
+      "Applications receiving AccessDenied when assuming IAM role",
+      "STS AssumeRole operation failing",
+      "Services unable to access required AWS resources",
+      "Cross-account role assumption failing"
+    ],
+    "root_cause": [
+      "Trust policy not allowing the principal to assume role",
+      "Incorrect principal ARN in trust relationship",
+      "External ID condition not matching",
+      "MFA requirement not satisfied"
+    ],
+    "diagnosis": [
+      "Review IAM role trust policy",
+      "Check CloudTrail for AssumeRole failures",
+      "Verify principal ARN and conditions",
+      "Test role assumption with AWS CLI"
+    ],
+    "fix": [
+      "Update trust policy to allow correct principal",
+      "Fix principal ARN in trust relationship",
+      "Match external ID in trust policy with caller",
+      "Remove or adjust MFA requirement if needed"
+    ],
+    "prevention": [
+      "Use least privilege in trust policies",
+      "Document role trust relationships",
+      "Test role assumptions after changes",
+      "Use IAM Access Analyzer to validate policies"
+    ],
+    "tags": ["aws", "iam", "security", "roles"]
+  },
+  {
+    "id": "aws-cloudwatch-logs",
+    "title": "CloudWatch Logs not receiving application logs",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 63,
+    "symptoms": [
+      "CloudWatch Logs console showing no log events",
+      "Log groups empty despite application running",
+      "Log ingestion delays or missing logs",
+      "Metric filters not triggering"
+    ],
+    "root_cause": [
+      "IAM permissions insufficient for log group creation",
+      "Log agent not installed or misconfigured",
+      "Network issues preventing log delivery",
+      "Log retention policy deleting logs too quickly"
+    ],
+    "diagnosis": [
+      "Check CloudWatch Logs agent status",
+      "Review IAM permissions for log operations",
+      "Test network connectivity to CloudWatch Logs endpoint",
+      "Verify log group configuration"
+    ],
+    "fix": [
+      "Grant necessary IAM permissions for log operations",
+      "Install or reconfigure CloudWatch Logs agent",
+      "Fix network connectivity to CloudWatch Logs",
+      "Adjust log retention policy"
+    ],
+    "prevention": [
+      "Use CloudWatch Logs agent with proper configuration",
+      "Grant least privilege IAM permissions",
+      "Monitor log delivery metrics",
+      "Set appropriate retention policies"
+    ],
+    "tags": ["aws", "cloudwatch", "logging", "monitoring"]
+  },
+  {
+    "id": "aws-ses-bounce",
+    "title": "SES emails bouncing due to reputation issues",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 59,
+    "symptoms": [
+      "Emails sent via SES bouncing",
+      "SES sending reputation degraded",
+      "High bounce rate affecting deliverability",
+      "Complaints from recipients"
+    ],
+    "root_cause": [
+      "Sending to invalid or non-existent email addresses",
+      "Poor email list quality",
+      "Sending behavior resembling spam",
+      "Missing SPF/DKIM records"
+    ],
+    "diagnosis": [
+      "Check SES reputation metrics in console",
+      "Review bounce and complaint reports",
+      "Analyze email sending patterns",
+      "Verify SPF/DKIM DNS records"
+    ],
+    "fix": [
+      "Remove invalid email addresses from mailing lists",
+      "Implement email list validation",
+      "Follow email sending best practices",
+      "Configure SPF/DKIM for domain authentication"
+    ],
+    "prevention": [
+      "Validate email lists regularly",
+      "Use confirmed opt-in for subscriptions",
+      "Monitor SES reputation metrics",
+      "Implement bounce and complaint handling"
+    ],
+    "tags": ["aws", "ses", "email", "deliverability"]
+  },
+  {
+    "id": "aws-efs-mount",
+    "title": "EFS mount failing with permission denied errors",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 61,
+    "symptoms": [
+      "EFS mount command failing with permission denied",
+      "Cannot access EFS filesystem from EC2 instance",
+      "Mount point inaccessible after successful mount",
+      "Different behavior across instances"
+    ],
+    "root_cause": [
+      "Security group blocking NFS traffic",
+      "IAM policy not allowing EFS access",
+      "Mount target not in same VPC or subnet",
+      "EFS filesystem access point misconfigured"
+    ],
+    "diagnosis": [
+      "Check security group rules for NFS port 2049",
+      "Review IAM policies for EFS access",
+      "Verify VPC and subnet configuration",
+      "Test network connectivity to mount target"
+    ],
+    "fix": [
+      "Update security group to allow NFS traffic on port 2049",
+      "Grant EFS access in IAM policy",
+      "Ensure mount target in same VPC as mounting instance",
+      "Configure or remove EFS access points"
+    ],
+    "prevention": [
+      "Use security groups with proper NFS rules",
+      "Implement IAM policies for EFS access",
+      "Document EFS mount procedures",
+      "Test EFS access after configuration"
+    ],
+    "tags": ["aws", "efs", "storage", "networking"]
+  },
+  {
+    "id": "aws-elasticache",
+    "title": "ElastiCache cluster experiencing connection failures",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P1",
+    "popularity": 70,
+    "symptoms": [
+      "Applications unable to connect to ElastiCache",
+      "Connection timeouts to Redis/Memcached",
+      "Cache cluster showing high CPU or memory",
+      "Failover not working as expected"
+    ],
+    "root_cause": [
+      "Security group blocking cache port",
+      "Cache cluster under-provisioned for workload",
+      "Network issues between application and cluster",
+      "Maximum connections limit reached"
+    ],
+    "diagnosis": [
+      "Check security group rules for cache port",
+      "Review ElastiCache metrics for CPU/memory",
+      "Test network connectivity to cache cluster",
+      "Monitor connection count"
+    ],
+    "fix": [
+      "Update security group to allow cache traffic",
+      "Scale cache cluster vertically or horizontally",
+      "Fix network connectivity issues",
+      "Increase maximum connections or use connection pooling"
+    ],
+    "prevention": [
+      "Right-size cache cluster for workload",
+      "Use connection pooling in applications",
+      "Monitor cache performance metrics",
+      "Implement cache cluster auto-scaling"
+    ],
+    "tags": ["aws", "elasticache", "cache", "performance"]
+  },
+  {
+    "id": "aws-route53",
+    "title": "Route53 DNS resolution failing for hosted zone",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 67,
+    "symptoms": [
+      "Domain names not resolving to correct IP addresses",
+      "DNS queries returning NXDOMAIN",
+      "DNS propagation delays after record changes",
+      "Health checks failing for records"
+    ],
+    "root_cause": [
+      "Incorrect record configuration",
+      "Delegation set not properly configured",
+      "Health check endpoint failing",
+      "DNS cache causing propagation delays"
+    ],
+    "diagnosis": [
+      "Check Route53 record configuration",
+      "Verify delegation set at registrar",
+      "Test health check endpoint",
+      "Use dig to query authoritative DNS servers"
+    ],
+    "fix": [
+      "Correct record configuration in Route53",
+      "Update delegation set at domain registrar",
+      "Fix health check endpoint",
+      "Lower TTL to speed up propagation"
+    ],
+    "prevention": [
+      "Use Terraform/CloudFormation for DNS management",
+      "Implement DNS monitoring",
+      "Test DNS changes in staging",
+      "Document DNS configuration procedures"
+    ],
+    "tags": ["aws", "route53", "dns", "networking"]
+  },
+  {
+    "id": "aws-kms-access",
+    "title": "KMS key access denied for encryption operations",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P1",
+    "popularity": 72,
+    "symptoms": [
+      "Applications failing to encrypt/decrypt data",
+      "KMS AccessDenied errors in logs",
+      "S3 or EBS operations failing due to KMS permissions",
+      "Lambda functions unable to use customer-managed keys"
+    ],
+    "root_cause": [
+      "IAM policy missing KMS permissions",
+      "KMS key policy not allowing access",
+      "Incorrect key ARN in encryption operations",
+      "Key disabled or scheduled for deletion"
+    ],
+    "diagnosis": [
+      "Review IAM policies for KMS permissions",
+      "Check KMS key policy",
+      "Verify key ARN in application configuration",
+      "Check key status in KMS console"
+    ],
+    "fix": [
+      "Grant kms:Encrypt and kms:Decrypt in IAM policy",
+      "Update KMS key policy to allow access",
+      "Correct key ARN in application configuration",
+      "Enable key if disabled or cancel scheduled deletion"
+    ],
+    "prevention": [
+      "Use least privilege for KMS permissions",
+      "Document KMS key usage",
+      "Implement key rotation",
+      "Monitor KMS API usage"
+    ],
+    "tags": ["aws", "kms", "encryption", "security"]
+  },
+  {
+    "id": "aws-nat-gateway",
+    "title": "NAT Gateway causing high costs and connectivity issues",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 69,
+    "symptoms": [
+      "Unexpectedly high NAT Gateway charges",
+      "Private subnets unable to access internet",
+      "NAT Gateway showing high data transfer",
+      "Intermittent connectivity failures"
+    ],
+    "root_cause": [
+      "NAT Gateway processing excessive traffic",
+      "Misconfigured route tables sending all traffic through NAT",
+      "Applications making unnecessary internet calls",
+      "NAT Gateway in wrong availability zone"
+    ],
+    "diagnosis": [
+      "Review CloudWatch metrics for NAT Gateway",
+      "Check route table configuration",
+      "Analyze traffic patterns",
+      "Review NAT Gateway costs in billing console"
+    ],
+    "fix": [
+      "Implement VPC endpoints for AWS services",
+      "Fix route table configuration to minimize NAT usage",
+      "Optimize application to reduce internet calls",
+      "Use NAT instances for cost optimization if appropriate"
+    ],
+    "prevention": [
+      "Use VPC endpoints where possible",
+      "Monitor NAT Gateway usage and costs",
+      "Implement cost alerts",
+      "Review architecture for NAT Gateway dependencies"
+    ],
+    "tags": ["aws", "nat", "networking", "cost"]
+  },
+  {
+    "id": "aws-cloudformation",
+    "title": "CloudFormation stack update failing with rollback",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 66,
+    "symptoms": [
+      "CloudFormation stack update rolling back",
+      "Stack creation failing mid-deployment",
+      "Resources in inconsistent state after failed update",
+      "Error messages unclear or generic"
+    ],
+    "root_cause": [
+      "Resource creation dependency issues",
+      "Invalid parameter values in template",
+      "Resource limit exceeded",
+      "IAM permissions insufficient for stack operations"
+    ],
+    "diagnosis": [
+      "Review CloudFormation events for failure details",
+      "Check stack template for errors",
+      "Verify IAM permissions for all resources",
+      "Test template with change sets"
+    ],
+    "fix": [
+      "Fix resource dependencies in template",
+      "Correct parameter values",
+      "Request service quota increase if needed",
+      "Update IAM role with required permissions"
+    ],
+    "prevention": [
+      "Use change sets before stack updates",
+      "Validate templates before deployment",
+      "Implement stack policies",
+      "Test changes in non-production environment"
+    ],
+    "tags": ["aws", "cloudformation", "iac", "deployment"]
   }
 ]
