@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { SearchIcon, Home01Icon } from '@hugeicons/core-free-icons';
+import { SearchIcon, Home01Icon, Alert01Icon } from '@hugeicons/core-free-icons';
 
 export function Header() {
   return (
@@ -29,6 +29,7 @@ export function Header() {
             </Link>
             <Link href="/issues">
               <Button variant="ghost">
+                <HugeiconsIcon icon={Alert01Icon} size={16} />
                 Issues
               </Button>
             </Link>

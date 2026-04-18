@@ -99,8 +99,8 @@ export default function Home() {
             {/* Search */}
             <div className="mb-8">
               <div className="relative max-w-2xl mx-auto">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <HugeiconsIcon icon={SearchIcon} size={20} />
+                <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <HugeiconsIcon icon={SearchIcon} size={16} className="sm:size-5" />
                 </div>
                 <Input
                   type="text"
@@ -108,12 +108,12 @@ export default function Home() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className="pl-12 h-14 text-base shadow-lg"
+                  className="pl-10 sm:pl-12 h-12 sm:h-14 text-sm sm:text-base shadow-lg pr-24 sm:pr-32"
                 />
                 <Button
                   onClick={handleSearch}
-                  size="lg"
-                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                  size="default"
+                  className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 h-9 sm:h-11 text-xs sm:text-base px-3 sm:px-4"
                 >
                   Search
                 </Button>
@@ -137,18 +137,25 @@ export default function Home() {
       </section>
 
       {/* ── Stats Strip ── */}
-      <section className="border-b bg-background">
+      <section className="border-b bg-gradient-to-r from-background via-muted/20 to-background">
         <div className="container mx-auto px-3">
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x">
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-border/50">
             {[
-              { value: totalIssues.toString(), label: 'Issues Documented' },
-              { value: tools.length.toString(), label: 'Tools Covered' },
-              { value: categories.length.toString(), label: 'Categories' },
-              { value: '100%', label: 'Production-Tested' },
-            ].map((stat) => (
-              <div key={stat.label} className="py-4 sm:py-8 text-center">
-                <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold">{stat.value}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground mt-1">{stat.label}</div>
+              { value: totalIssues.toString(), label: 'Issues', icon: <HugeiconsIcon icon={Alert02Icon} size={16} className="text-primary" /> },
+              { value: tools.length.toString(), label: 'Tools', icon: <HugeiconsIcon icon={GitBranchIcon} size={16} className="text-primary" /> },
+              { value: categories.length.toString(), label: 'Categories', icon: <HugeiconsIcon icon={DashboardSpeed02Icon} size={16} className="text-primary" /> },
+              { value: '100%', label: 'Tested', icon: <HugeiconsIcon icon={Shield01Icon} size={16} className="text-primary" /> },
+            ].map((stat, index) => (
+              <div key={stat.label} className="py-3 sm:py-4 text-center group hover:bg-muted/30 transition-colors">
+                <div className="flex flex-col items-center gap-1 sm:gap-2">
+                  <div className={`p-1.5 sm:p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-all ${index === 0 ? 'animate-pulse' : ''}`}>
+                    {stat.icon}
+                  </div>
+                  <div className="text-xl sm:text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                    {stat.value}
+                  </div>
+                  <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">{stat.label}</div>
+                </div>
               </div>
             ))}
           </div>
@@ -168,28 +175,28 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {popularIssues.map((issue) => (
               <Link key={issue.id} href={`/issues/${issue.id}`}>
                 <Card className="bg-card border-border/50 shadow-lg hover:shadow-xl transition-shadow h-full">
-                  <CardHeader className="pb-2 sm:pb-3">
-                    <div className="text-[10px] sm:text-xs text-muted-foreground mb-1 sm:mb-2 uppercase tracking-wide">{issue.category}</div>
-                    <CardTitle className="text-base sm:text-lg line-clamp-2">{issue.title}</CardTitle>
+                  <CardHeader className="pb-1 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+                    <div className="text-[9px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-2 uppercase tracking-wide">{issue.category}</div>
+                    <CardTitle className="text-sm sm:text-lg line-clamp-2">{issue.title}</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-3 sm:mb-4">
+                  <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+                    <p className="text-[10px] sm:text-sm text-muted-foreground line-clamp-2 mb-2 sm:mb-4">
                       {issue.symptoms[0]}
                     </p>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                      <div className="flex items-center gap-1.5 sm:gap-2">
+                        <span className={`inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium ${
                           issue.severity === 'P1' ? 'bg-red-500/20 text-red-400' :
                           issue.severity === 'P2' ? 'bg-yellow-500/20 text-yellow-400' :
                           'bg-blue-500/20 text-blue-400'
                         }`}>
                           {severityConfig[issue.severity]?.label}
                         </span>
-                        <span className="text-xs text-muted-foreground uppercase">{issue.tool}</span>
+                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase">{issue.tool}</span>
                       </div>
                     </div>
                   </CardContent>
