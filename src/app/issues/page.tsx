@@ -16,9 +16,9 @@ import { SearchIcon } from '@hugeicons/core-free-icons';
 function IssuesContent() {
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
-  const [selectedTool, setSelectedTool] = useState(searchParams.get('tool') || '');
-  const [selectedSeverity, setSelectedSeverity] = useState(searchParams.get('severity') || '');
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
+  const [selectedTool, setSelectedTool] = useState(searchParams.get('tool') || 'all');
+  const [selectedSeverity, setSelectedSeverity] = useState(searchParams.get('severity') || 'all');
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
   const [filteredIssues, setFilteredIssues] = useState<Issue[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
@@ -27,17 +27,37 @@ function IssuesContent() {
   const categories = getCategories().map(c => c.name);
   const severities = ['P1', 'P2', 'P3'];
 
-  const severityColors: Record<string, string> = {
-    'P1': 'bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200',
-    'P2': 'bg-gray-700 text-white hover:bg-gray-600 dark:bg-gray-300 dark:text-black dark:hover:bg-gray-400',
-    'P3': 'bg-gray-400 text-white hover:bg-gray-500 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-500',
+  const getSeverityBadgeClass = (severity: string) => {
+    switch (severity) {
+      case 'P1':
+        return 'bg-red-500/20 text-red-400';
+      case 'P2':
+        return 'bg-yellow-500/20 text-yellow-400';
+      case 'P3':
+        return 'bg-blue-500/20 text-blue-400';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  const getSeverityLabel = (severity: string) => {
+    switch (severity) {
+      case 'P1':
+        return 'CRITICAL';
+      case 'P2':
+        return 'WARNING';
+      case 'P3':
+        return 'LOW';
+      default:
+        return severity;
+    }
   };
 
   useEffect(() => {
     const filters: IssueFilters = {
-      tool: selectedTool || undefined,
-      severity: selectedSeverity as any || undefined,
-      category: selectedCategory || undefined,
+      tool: selectedTool && selectedTool !== 'all' ? selectedTool : undefined,
+      severity: selectedSeverity && selectedSeverity !== 'all' ? selectedSeverity as any : undefined,
+      category: selectedCategory && selectedCategory !== 'all' ? selectedCategory : undefined,
       query: searchQuery || undefined,
     };
     const results = filterIssues(filters);
@@ -56,44 +76,44 @@ function IssuesContent() {
 
   const clearFilters = () => {
     setSearchQuery('');
-    setSelectedTool('');
-    setSelectedSeverity('');
-    setSelectedCategory('');
+    setSelectedTool('all');
+    setSelectedSeverity('all');
+    setSelectedCategory('all');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-black dark:to-gray-900">
+    <div className="min-h-screen bg-secondary/20">
       {/* Page Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold text-black dark:text-white mb-6 text-center">
+      <div className="bg-card border-b border-border/50">
+        <div className="container mx-auto px-3 py-6 sm:py-8">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center">
             Issues
           </h1>
 
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto mb-4">
             <div className="relative">
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                <HugeiconsIcon icon={SearchIcon} size={20} />
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                <HugeiconsIcon icon={SearchIcon} size={18} className="sm:size-5" />
               </div>
               <Input
                 type="text"
                 placeholder="Search issues, symptoms, or tags..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10 h-12 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                className="pl-10 h-10 sm:h-12"
               />
             </div>
           </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="flex flex-wrap gap-2 sm:gap-4 justify-center">
             <Select value={selectedTool} onValueChange={setSelectedTool}>
-              <SelectTrigger className="w-[180px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
+              <SelectTrigger className="w-[140px] sm:w-[180px]">
                 <SelectValue placeholder="All Tools" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Tools</SelectItem>
+                <SelectItem value="all">All Tools</SelectItem>
                 {tools.map((tool) => (
                   <SelectItem key={tool} value={tool}>{tool}</SelectItem>
                 ))}
@@ -101,11 +121,11 @@ function IssuesContent() {
             </Select>
 
             <Select value={selectedSeverity} onValueChange={setSelectedSeverity}>
-              <SelectTrigger className="w-[140px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
+              <SelectTrigger className="w-[100px] sm:w-[140px]">
                 <SelectValue placeholder="Severity" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All</SelectItem>
+                <SelectItem value="all">All</SelectItem>
                 {severities.map((severity) => (
                   <SelectItem key={severity} value={severity}>{severity}</SelectItem>
                 ))}
@@ -113,18 +133,18 @@ function IssuesContent() {
             </Select>
 
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[200px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
+              <SelectTrigger className="w-[140px] sm:w-[200px]">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category} value={category}>{category}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            {(selectedTool || selectedSeverity || selectedCategory) && (
+            {(selectedTool !== 'all' || selectedSeverity !== 'all' || selectedCategory !== 'all') && (
               <Button variant="outline" onClick={clearFilters}>
                 Clear Filters
               </Button>
@@ -134,17 +154,17 @@ function IssuesContent() {
       </div>
 
       {/* Results Count */}
-      <div className="container mx-auto px-4 py-6">
-        <p className="text-gray-600 dark:text-gray-400">
+      <div className="container mx-auto px-3 py-4 sm:py-6">
+        <p className="text-sm text-muted-foreground">
           Showing {filteredIssues.length} issue{filteredIssues.length !== 1 ? 's' : ''}
         </p>
       </div>
 
       {/* Issues Grid */}
-      <div className="container mx-auto px-4 pb-8">
+      <div className="container mx-auto px-3 pb-6 sm:pb-8">
         {currentIssues.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-xl text-gray-600 dark:text-gray-400 mb-4">
+          <div className="text-center py-12 sm:py-20">
+            <p className="text-lg sm:text-xl text-muted-foreground mb-4">
               No issues found matching your criteria
             </p>
             <Button onClick={clearFilters} variant="outline">
@@ -152,36 +172,29 @@ function IssuesContent() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {currentIssues.map((issue) => (
               <Link key={issue.id} href={`/issues/${issue.id}`}>
-                <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer bg-white dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 backdrop-blur-sm">
-                  <CardHeader>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge className={severityColors[issue.severity]}>
-                        {issue.severity}
-                      </Badge>
-                      <Badge variant="outline" className="text-gray-600 dark:text-gray-400">
-                        {issue.tool}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-lg line-clamp-2">{issue.title}</CardTitle>
-                    <CardDescription className="line-clamp-2">
-                      {issue.symptoms[0]}
-                    </CardDescription>
+                <Card className="bg-card border-border/50 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full">
+                  <CardHeader className="pb-2 sm:pb-3">
+                    <div className="text-[10px] sm:text-xs text-muted-foreground mb-1 sm:mb-2 uppercase tracking-wide">{issue.category}</div>
+                    <CardTitle className="text-base sm:text-lg line-clamp-2">{issue.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {issue.tags.slice(0, 3).map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                      {issue.tags.length > 3 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{issue.tags.length - 3}
-                        </Badge>
-                      )}
+                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-3 sm:mb-4">
+                      {issue.symptoms[0]}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] sm:text-xs font-medium ${
+                          issue.severity === 'P1' ? 'bg-red-500/20 text-red-400' :
+                          issue.severity === 'P2' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-blue-500/20 text-blue-400'
+                        }`}>
+                          {getSeverityLabel(issue.severity)}
+                        </span>
+                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase">{issue.tool}</span>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -192,7 +205,7 @@ function IssuesContent() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-8">
+          <div className="flex justify-center items-center gap-2 mt-6 sm:mt-8">
             <Button
               variant="outline"
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
@@ -200,7 +213,7 @@ function IssuesContent() {
             >
               Previous
             </Button>
-            <span className="text-gray-600 dark:text-gray-400">
+            <span className="text-sm text-muted-foreground">
               Page {currentPage} of {totalPages}
             </span>
             <Button

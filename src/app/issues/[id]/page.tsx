@@ -44,7 +44,7 @@ export default function IssueDetailPage() {
 
   if (!issue) {
     return (
-      <div className="min-h-screen bg-secondary/20 flex items-center justify-center">
+      <div className="min-h-screen bg-secondary/20 flex items-center justify-center px-3">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">
             Issue Not Found
@@ -97,7 +97,7 @@ export default function IssueDetailPage() {
   return (
     <div className="min-h-screen bg-secondary/20">
       {/* Back Button */}
-      <div className="container mx-auto px-4 pt-8">
+      <div className="container mx-auto px-3 pt-6 sm:pt-8">
         <Button variant="ghost" onClick={() => router.back()} className="gap-2">
           <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
           Back
@@ -105,17 +105,17 @@ export default function IssueDetailPage() {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-3 py-6 sm:py-8 max-w-6xl">
         {/* Title and Meta */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${getSeverityBadgeClass(issue.severity)}`}>
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <span className={`inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold ${getSeverityBadgeClass(issue.severity)}`}>
               {getSeverityLabel(issue.severity)}
             </span>
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">{issue.tool}</span>
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">{issue.category}</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">{issue.tool}</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">{issue.category}</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
             {issue.title}
           </h1>
           <div className="flex flex-wrap gap-2">
@@ -128,12 +128,12 @@ export default function IssueDetailPage() {
         </div>
 
         {/* Symptoms */}
-        <Card className="mb-6 bg-card border-border/50 shadow-lg">
+        <Card className="mb-4 sm:mb-6 bg-card border-border/50 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-xl">Symptoms</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">Symptoms</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+            <ul className="list-disc list-inside space-y-1 sm:space-y-2 text-sm sm:text-base text-muted-foreground">
               {issue.symptoms.map((symptom, index) => (
                 <li key={index}>{symptom}</li>
               ))}
@@ -142,12 +142,12 @@ export default function IssueDetailPage() {
         </Card>
 
         {/* Root Cause */}
-        <Card className="mb-6 bg-card border-border/50 shadow-lg">
+        <Card className="mb-4 sm:mb-6 bg-card border-border/50 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-xl">Root Cause</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">Root Cause</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+            <ul className="list-disc list-inside space-y-1 sm:space-y-2 text-sm sm:text-base text-muted-foreground">
               {issue.root_cause.map((cause, index) => (
                 <li key={index}>{cause}</li>
               ))}
@@ -156,12 +156,12 @@ export default function IssueDetailPage() {
         </Card>
 
         {/* Diagnosis */}
-        <Card className="mb-6 bg-card border-border/50 shadow-lg">
+        <Card className="mb-4 sm:mb-6 bg-card border-border/50 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-xl">Diagnosis</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">Diagnosis</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+            <ul className="list-disc list-inside space-y-1 sm:space-y-2 text-sm sm:text-base text-muted-foreground">
               {issue.diagnosis.map((step, index) => (
                 <li key={index}>{step}</li>
               ))}
@@ -170,24 +170,24 @@ export default function IssueDetailPage() {
         </Card>
 
         {/* Fix */}
-        <Card className="mb-6 bg-card border-border/50 shadow-lg">
+        <Card className="mb-4 sm:mb-6 bg-card border-border/50 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-xl">Fix</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">Fix</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2 text-muted-foreground">
+            <div className="space-y-1 sm:space-y-2 text-sm sm:text-base text-muted-foreground">
               {renderContent(issue.fix)}
             </div>
           </CardContent>
         </Card>
 
         {/* Prevention */}
-        <Card className="mb-6 bg-card border-border/50 shadow-lg">
+        <Card className="mb-4 sm:mb-6 bg-card border-border/50 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-xl">Prevention</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">Prevention</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+            <ul className="list-disc list-inside space-y-1 sm:space-y-2 text-sm sm:text-base text-muted-foreground">
               {issue.prevention.map((tip, index) => (
                 <li key={index}>{tip}</li>
               ))}
