@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { getAllTags } from '@/lib/issues';
+import { Grid02Icon, ListXIcon } from '@hugeicons/core-free-icons';
 import { searchIssues, filterIssues, getTools, getCategories } from '@/lib/issues';
 import type { Issue, IssueFilters } from '@/lib/types';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -19,6 +22,9 @@ function IssuesContent() {
   const [selectedTool, setSelectedTool] = useState(searchParams.get('tool') || 'all');
   const [selectedSeverity, setSelectedSeverity] = useState(searchParams.get('severity') || 'all');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
+  const [selectedTag, setSelectedTag] = useState(searchParams.get('tag') || 'all');
+  const [sortBy, setSortBy] = useState<'popularity' | 'severity' | 'title'>('popularity');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filteredIssues, setFilteredIssues] = useState<Issue[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
@@ -26,6 +32,7 @@ function IssuesContent() {
   const tools = getTools().map(t => t.name);
   const categories = getCategories().map(c => c.name);
   const severities = ['P1', 'P2', 'P3'];
+  const tags = getAllTags();
 
   const getSeverityBadgeClass = (severity: string) => {
     switch (severity) {
@@ -58,12 +65,29 @@ function IssuesContent() {
       tool: selectedTool && selectedTool !== 'all' ? selectedTool : undefined,
       severity: selectedSeverity && selectedSeverity !== 'all' ? selectedSeverity as any : undefined,
       category: selectedCategory && selectedCategory !== 'all' ? selectedCategory : undefined,
+      tag: selectedTag && selectedTag !== 'all' ? selectedTag : undefined,
       query: searchQuery || undefined,
     };
-    const results = filterIssues(filters);
+    let results = filterIssues(filters);
+    
+    // Apply sorting
+    results = [...results].sort((a, b) => {
+      switch (sortBy) {
+        case 'popularity':
+          return b.popularity - a.popularity;
+        case 'severity':
+          const severityOrder = { 'P1': 0, 'P2': 1, 'P3': 2 };
+          return severityOrder[a.severity] - severityOrder[b.severity];
+        case 'title':
+          return a.title.localeCompare(b.title);
+        default:
+          return 0;
+      }
+    });
+    
     setFilteredIssues(results);
     setCurrentPage(1);
-  }, [searchQuery, selectedTool, selectedSeverity, selectedCategory]);
+  }, [searchQuery, selectedTool, selectedSeverity, selectedCategory, selectedTag, sortBy]);
 
   const totalPages = Math.ceil(filteredIssues.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -79,6 +103,16 @@ function IssuesContent() {
     setSelectedTool('all');
     setSelectedSeverity('all');
     setSelectedCategory('all');
+    setSelectedTag('all');
+  };
+
+  const removeFilter = (filterType: 'tool' | 'severity' | 'category' | 'tag') => {
+    switch (filterType) {
+      case 'tool': setSelectedTool('all'); break;
+      case 'severity': setSelectedSeverity('all'); break;
+      case 'category': setSelectedCategory('all'); break;
+      case 'tag': setSelectedTag('all'); break;
+    }
   };
 
   return (
@@ -107,7 +141,7 @@ function IssuesContent() {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-2 sm:gap-4 justify-center">
+          <div className="flex flex-wrap gap-2 sm:gap-4 justify-center items-center">
             <Select value={selectedTool} onValueChange={setSelectedTool}>
               <SelectTrigger className="w-[140px] sm:w-[180px]">
                 <SelectValue placeholder="All Tools" />
@@ -144,7 +178,30 @@ function IssuesContent() {
               </SelectContent>
             </Select>
 
-            {(selectedTool !== 'all' || selectedSeverity !== 'all' || selectedCategory !== 'all') && (
+            <Select value={selectedTag} onValueChange={setSelectedTag}>
+              <SelectTrigger className="w-[140px] sm:w-[180px]">
+                <SelectValue placeholder="Tags" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tags</SelectItem>
+                {tags.slice(0, 20).map((tag) => (
+                  <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+              <SelectTrigger className="w-[140px] sm:w-[160px]">
+                <SelectValue placeholder="Sort By" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="popularity">Popularity</SelectItem>
+                <SelectItem value="severity">Severity</SelectItem>
+                <SelectItem value="title">Title</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {(selectedTool !== 'all' || selectedSeverity !== 'all' || selectedCategory !== 'all' || selectedTag !== 'all') && (
               <Button variant="outline" onClick={clearFilters}>
                 Clear Filters
               </Button>
@@ -153,11 +210,51 @@ function IssuesContent() {
         </div>
       </div>
 
-      {/* Results Count */}
+      {/* Results Count & Active Filters */}
       <div className="container mx-auto px-3 py-4 sm:py-6">
-        <p className="text-sm text-muted-foreground">
-          Showing {filteredIssues.length} issue{filteredIssues.length !== 1 ? 's' : ''}
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            Showing {filteredIssues.length} issue{filteredIssues.length !== 1 ? 's' : ''}
+          </p>
+          
+          {/* Active Filters */}
+          <div className="flex flex-wrap gap-2">
+            {selectedTool !== 'all' && (
+              <Badge variant="secondary" className="gap-1 cursor-pointer hover:bg-secondary/80" onClick={() => removeFilter('tool')}>
+                Tool: {selectedTool}
+                <span className="ml-1">×</span>
+              </Badge>
+            )}
+            {selectedSeverity !== 'all' && (
+              <Badge variant="secondary" className="gap-1 cursor-pointer hover:bg-secondary/80" onClick={() => removeFilter('severity')}>
+                Severity: {selectedSeverity}
+                <span className="ml-1">×</span>
+              </Badge>
+            )}
+            {selectedCategory !== 'all' && (
+              <Badge variant="secondary" className="gap-1 cursor-pointer hover:bg-secondary/80" onClick={() => removeFilter('category')}>
+                Category: {selectedCategory}
+                <span className="ml-1">×</span>
+              </Badge>
+            )}
+            {selectedTag !== 'all' && (
+              <Badge variant="secondary" className="gap-1 cursor-pointer hover:bg-secondary/80" onClick={() => removeFilter('tag')}>
+                Tag: {selectedTag}
+                <span className="ml-1">×</span>
+              </Badge>
+            )}
+          </div>
+
+          {/* View Toggle */}
+          <ToggleGroup type="single" value={viewMode} onValueChange={(value: any) => value && setViewMode(value)}>
+            <ToggleGroupItem value="grid" aria-label="Grid view">
+              <HugeiconsIcon icon={Grid02Icon} size={18} />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="list" aria-label="List view">
+              <HugeiconsIcon icon={ListXIcon} size={18} />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
       </div>
 
       {/* Issues Grid */}
@@ -172,20 +269,47 @@ function IssuesContent() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className={viewMode === 'grid' 
+            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6' 
+            : 'flex flex-col gap-3'
+          }>
             {currentIssues.map((issue) => (
               <Link key={issue.id} href={`/issues/${issue.id}`}>
-                <Card className="bg-card border-border/50 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full">
-                  <CardHeader className="pb-2 sm:pb-3">
-                    <div className="text-[10px] sm:text-xs text-muted-foreground mb-1 sm:mb-2 uppercase tracking-wide">{issue.category}</div>
-                    <CardTitle className="text-base sm:text-lg line-clamp-2">{issue.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-3 sm:mb-4">
-                      {issue.symptoms[0]}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                <Card className={`bg-card border-border/50 shadow-lg hover:shadow-xl transition-shadow cursor-pointer ${viewMode === 'list' ? 'flex flex-row' : 'h-full'}`}>
+                  {viewMode === 'grid' ? (
+                    <>
+                      <CardHeader className="pb-2 sm:pb-3">
+                        <div className="text-[10px] sm:text-xs text-muted-foreground mb-1 sm:mb-2 uppercase tracking-wide">{issue.category}</div>
+                        <CardTitle className="text-base sm:text-lg line-clamp-2">{issue.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-3 sm:mb-4">
+                          {issue.symptoms[0]}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] sm:text-xs font-medium ${
+                              issue.severity === 'P1' ? 'bg-red-500/20 text-red-400' :
+                              issue.severity === 'P2' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-blue-500/20 text-blue-400'
+                            }`}>
+                              {getSeverityLabel(issue.severity)}
+                            </span>
+                            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase">{issue.tool}</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </>
+                  ) : (
+                    <CardContent className="flex-1 flex flex-row items-center gap-4 py-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[10px] sm:text-xs text-muted-foreground mb-1 uppercase tracking-wide">{issue.category}</div>
+                        <CardTitle className="text-sm sm:text-base line-clamp-1">{issue.title}</CardTitle>
+                        <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                          {issue.symptoms[0]}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] sm:text-xs font-medium ${
                           issue.severity === 'P1' ? 'bg-red-500/20 text-red-400' :
                           issue.severity === 'P2' ? 'bg-yellow-500/20 text-yellow-400' :
@@ -195,8 +319,8 @@ function IssuesContent() {
                         </span>
                         <span className="text-[10px] sm:text-xs text-muted-foreground uppercase">{issue.tool}</span>
                       </div>
-                    </div>
-                  </CardContent>
+                    </CardContent>
+                  )}
                 </Card>
               </Link>
             ))}
