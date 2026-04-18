@@ -68,5 +68,328 @@
       "Enforce image size budgets in CI"
     ],
     "tags": ["docker", "performance", "buildkit", "cache"]
+  },
+  {
+    "id": "docker-container-exit",
+    "title": "Containers exit immediately after starting without clear error message",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P2",
+    "popularity": 73,
+    "symptoms": [
+      "docker run or docker-compose up shows container exit code 1",
+      "docker logs shows minimal or no output",
+      "Container runs fine locally but fails in CI/CD environment",
+      "Restart policy causes continuous restart loop"
+    ],
+    "root_cause": [
+      "Main process in container completes execution (not a daemon process)",
+      "Missing required environment variables or configuration files",
+      "Entrypoint script failing silently without proper error handling",
+      "Healthcheck failing causing container to be marked unhealthy and stopped"
+    ],
+    "diagnosis": [
+      "Inspect exit code: docker inspect <container> | grep ExitCode",
+      "Check logs with --tail and --timestamps: docker logs --tail 100 <container>",
+      "Run container with interactive tty: docker run -it <image> /bin/bash",
+      "Verify environment variables: docker exec <container> env"
+    ],
+    "fix": [
+      "Ensure the main process runs in foreground mode with CMD or ENTRYPOINT directive",
+      "Add proper error handling in entrypoint scripts with set -e and trap commands",
+      "Mount required configuration files as volumes",
+      "Use --restart=no during debugging to prevent restart loops"
+    ],
+    "prevention": [
+      "Test containers locally with same environment as production",
+      "Implement comprehensive logging in entrypoint scripts",
+      "Use healthchecks with appropriate intervals and timeouts",
+      "Add smoke tests in CI pipeline to validate container startup"
+    ],
+    "tags": ["docker", "debugging", "exit", "entrypoint"]
+  },
+  {
+    "id": "docker-network-bridge",
+    "title": "Containers cannot communicate on default bridge network",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P2",
+    "popularity": 65,
+    "symptoms": [
+      "Container A cannot resolve Container B by container name",
+      "Connection refused errors when accessing services between containers",
+      "docker network inspect shows containers on different networks",
+      "Communication works with IP addresses but not container names"
+    ],
+    "root_cause": [
+      "Default bridge network does not support DNS resolution between containers",
+      "Containers attached to different user-defined networks",
+      "Legacy linking (--link) deprecated and not configured",
+      "Custom DNS settings overriding Docker's internal DNS"
+    ],
+    "diagnosis": [
+      "Check network attachment: docker inspect <container> | grep Networks",
+      "Test DNS resolution: docker exec <container> nslookup <other-container>",
+      "List all networks: docker network ls",
+      "Inspect network configuration: docker network inspect bridge"
+    ],
+    "fix": [
+      "Create and use a user-defined bridge network:",
+      "```bash\ndocker network create app-network\ndocker run --network app-network --name service-a myimage\ndocker run --network app-network --name service-b myimage\n```",
+      "Update docker-compose.yml to use custom networks:",
+      "```yaml\nnetworks:\n  app-network:\n    driver: bridge\nservices:\n  web:\n    networks:\n      - app-network\n```",
+      "Use --link only as temporary workaround for legacy applications",
+      "Ensure all related services share the same network"
+    ],
+    "prevention": [
+      "Always define custom networks in docker-compose files",
+      "Document network architecture in project README",
+      "Use service discovery patterns for microservice communication",
+      "Test inter-container communication in staging environment"
+    ],
+    "tags": ["docker", "networking", "dns", "bridge"]
+  },
+  {
+    "id": "docker-volume-permission",
+    "title": "Permission denied errors when accessing mounted volumes",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P2",
+    "popularity": 70,
+    "symptoms": [
+      "Application logs show permission denied when writing to mounted directory",
+      "Container process cannot create files in bind-mounted volume",
+      "Works on local development machine but fails in production",
+      "Different UID/GID between host and container causing access issues"
+    ],
+    "root_cause": [
+      "Container process runs as different user than host file owner",
+      "Host directory permissions too restrictive for container user",
+      "SELinux or AppArmor blocking container access to host files",
+      "Volume mounted with read-only flag but application requires write access"
+    ],
+    "diagnosis": [
+      "Check container user: docker exec <container> id",
+      "Inspect volume permissions: ls -la <host-path>",
+      "Check mount options: docker inspect <container> | grep Mounts",
+      "Review security context: docker exec <container> getenforce"
+    ],
+    "fix": [
+      "Match container UID/GID with host directory owner:",
+      "```dockerfile\nRUN useradd -u 1000 appuser\nUSER appuser\n```",
+      "Adjust host directory permissions:",
+      "```bash\nsudo chown -R 1000:1000 /path/to/volume\n```",
+      "Use :z or :Z flags for SELinux contexts:",
+      "```bash\ndocker run -v /host/path:/container/path:z myimage\n```",
+      "Run container with --user flag to specify UID"
+    ],
+    "prevention": [
+      "Document required UID/GID in project documentation",
+      "Use named volumes instead of bind mounts when possible",
+      "Implement entrypoint script to fix permissions on startup",
+      "Test volume mounts in CI with same user context as production"
+    ],
+    "tags": ["docker", "volumes", "permissions", "selinux"]
+  },
+  {
+    "id": "docker-cpu-throttle",
+    "title": "Container performance degraded due to CPU throttling",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P3",
+    "popularity": 62,
+    "symptoms": [
+      "Application response times increase under load",
+      "docker stats shows high CPU throttling percentage",
+      "Process runs slowly despite host having available CPU",
+      "Performance improves when CPU limits removed"
+    ],
+    "root_cause": [
+      "CPU limits set too low for application workload",
+      "CPU shares not properly configured among competing containers",
+      "Single-threaded application limited by single CPU quota",
+      "Host CPU contention from other processes"
+    ],
+    "diagnosis": [
+      "Monitor CPU usage: docker stats <container>",
+      "Check CPU limits: docker inspect <container> | grep Cpu",
+      "Review host CPU load: top or htop",
+      "Analyze application profiling data"
+    ],
+    "fix": [
+      "Increase CPU limits in docker-compose or run command:",
+      "```yaml\nservices:\n  app:\n    deploy:\n      resources:\n        limits:\n          cpus: '2.0'\n```",
+      "Adjust CPU shares for relative priority:",
+      "```bash\ndocker run --cpu-shares 512 myimage\n```",
+      "Use --cpuset-cpus to bind to specific cores",
+      "Remove CPU limits if not strictly required"
+    ],
+    "prevention": [
+      "Profile application CPU requirements before setting limits",
+      "Use resource quotas in Kubernetes for production workloads",
+      "Monitor CPU throttling metrics in observability platform",
+      "Implement horizontal scaling instead of vertical scaling for CPU-bound workloads"
+    ],
+    "tags": ["docker", "performance", "cpu", "throttling"]
+  },
+  {
+    "id": "docker-layer-size",
+    "title": "Docker image size too large causing slow deployments",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P3",
+    "popularity": 68,
+    "symptoms": [
+      "docker push takes excessive time to upload",
+      "Registry storage costs increasing rapidly",
+      "Pod startup slow due to large image pull times",
+      "Image exceeds registry size limits"
+    ],
+    "root_cause": [
+      "Including unnecessary files in build context",
+      "Not using multi-stage builds to exclude build dependencies",
+      "Large base images instead of minimal variants",
+      "Each RUN command creating a new layer without cleanup"
+    ],
+    "diagnosis": [
+      "Analyze image layers: docker history <image>",
+      "Check image size: docker images <image>",
+      "Inspect build context: du -sh .",
+      "Use docker scout to analyze image contents"
+    ],
+    "fix": [
+      "Use multi-stage builds to exclude build tools and reduce final image size",
+      "Add .dockerignore to exclude node_modules, .git, *.md, and test directories",
+      "Combine RUN commands and clean up package cache in same layer",
+      "Use alpine or distroless base images"
+    ],
+    "prevention": [
+      "Enforce image size limits in CI pipeline",
+      "Regularly audit images with docker scout",
+      "Use Dependabot to keep base images updated",
+      "Document optimal base image choices in team guidelines"
+    ],
+    "tags": ["docker", "image-size", "optimization", "multi-stage"]
+  },
+  {
+    "id": "docker-healthcheck",
+    "title": "Container marked healthy but application not actually ready",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P2",
+    "popularity": 64,
+    "symptoms": [
+      "Load balancer sends traffic to container before application ready",
+      "Healthcheck passes but API returns 503 errors",
+      "Container restarts due to healthcheck failures",
+      "Inconsistent healthcheck behavior across environments"
+    ],
+    "root_cause": [
+      "Healthcheck only checking process existence not application readiness",
+      "Healthcheck interval too short or timeout too long",
+      "Healthcheck command not testing actual application endpoints",
+      "Application ready after healthcheck starts"
+    ],
+    "diagnosis": [
+      "Check healthcheck status: docker inspect <container> | grep Health",
+      "Test healthcheck command manually in container",
+      "Review application logs during startup sequence",
+      "Monitor healthcheck transition from starting to healthy"
+    ],
+    "fix": [
+      "Implement proper healthcheck testing application readiness:",
+      "```dockerfile\nHEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \\\n  CMD curl -f http://localhost:8080/health || exit 1\n```",
+      "Add start-period to allow application initialization time",
+      "Use application-specific health endpoints that check dependencies",
+      "Adjust interval and timeout based on application characteristics"
+    ],
+    "prevention": [
+      "Design health endpoints that check critical dependencies",
+      "Document healthcheck requirements in service contract",
+      "Test healthcheck behavior in load scenarios",
+      "Use readiness probes in Kubernetes for more sophisticated checks"
+    ],
+    "tags": ["docker", "healthcheck", "readiness", "monitoring"]
+  },
+  {
+    "id": "docker-registry-auth",
+    "title": "Cannot pull images from private registry due to authentication failures",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P2",
+    "popularity": 66,
+    "symptoms": [
+      "docker pull returns 'unauthorized: authentication required'",
+      "CI/CD pipeline fails during image pull step",
+      "Works locally but fails in production environment",
+      "Authentication works intermittently"
+    ],
+    "root_cause": [
+      "Docker login credentials expired or not present on target machine",
+      "Using wrong credential store or configuration",
+      "Registry token has insufficient permissions",
+      "Credential helper not properly configured for CI/CD"
+    ],
+    "diagnosis": [
+      "Check docker login status: docker login",
+      "Verify credential store: cat ~/.docker/config.json",
+      "Test authentication manually with curl or registry CLI",
+      "Review CI/CD logs for authentication errors"
+    ],
+    "fix": [
+      "Re-authenticate with registry:",
+      "```bash\ndocker login registry.example.com -u <username> -p <password>\n```",
+      "Use credential store for secure token management:",
+      "```bash\ndocker-credential-pass configure\n```",
+      "For CI/CD, use registry-specific authentication:",
+      "```bash\necho $REGISTRY_PASSWORD | docker login -u $REGISTRY_USER --password-stdin registry.example.com\n```",
+      "Verify token has appropriate pull permissions"
+    ],
+    "prevention": [
+      "Use short-lived tokens with rotation policies",
+      "Implement credential management in CI/CD with secret stores",
+      "Document registry authentication procedures",
+      "Use service accounts for automated deployments"
+    ],
+    "tags": ["docker", "registry", "authentication", "ci-cd"]
+  },
+  {
+    "id": "docker-ipv6",
+    "title": "IPv6 connectivity issues in containerized applications",
+    "tool": "Docker",
+    "category": "Containers",
+    "severity": "P3",
+    "popularity": 58,
+    "symptoms": [
+      "Applications cannot reach IPv6-only services",
+      "Container has no IPv6 address assigned",
+      "IPv6 traffic blocked between containers",
+      "DNS resolution fails for AAAA records"
+    ],
+    "root_cause": [
+      "Docker daemon not configured with IPv6 enabled",
+      "Host system IPv6 not enabled or misconfigured",
+      "Network driver does not support IPv6",
+      "Firewall rules blocking IPv6 traffic"
+    ],
+    "diagnosis": [
+      "Check daemon configuration: cat /etc/docker/daemon.json",
+      "Inspect container IP addresses: docker inspect <container> | grep IPAddress",
+      "Test IPv6 connectivity: docker exec <container> ping6 -c 3 ipv6.google.com",
+      "Verify host IPv6: ip -6 addr show"
+    ],
+    "fix": [
+      "Enable IPv6 in Docker daemon configuration with ipv6: true and fixed-cidr-v6",
+      "Restart Docker daemon using systemctl restart docker",
+      "Create IPv6-enabled networks with docker network create command",
+      "Update firewall rules to allow IPv6 traffic"
+    ],
+    "prevention": [
+      "Enable IPv6 in daemon configuration from the start",
+      "Document IPv6 requirements in project documentation",
+      "Test IPv6 connectivity in staging environment",
+      "Use dual-stack networking for compatibility"
+    ],
+    "tags": ["docker", "ipv6", "networking", "configuration"]
   }
 ]

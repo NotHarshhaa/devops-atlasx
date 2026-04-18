@@ -105,5 +105,317 @@
       "Alert on pending pods > 2 minutes"
     ],
     "tags": ["kubernetes", "scheduling", "autoscaler", "capacity"]
+  },
+  {
+    "id": "k8s-hpa-flapping",
+    "title": "Horizontal Pod Autoscaler continuously scaling up and down",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 77,
+    "symptoms": [
+      "Pod count oscillates between minimum and maximum replicas",
+      "HPA metrics show frequent scale events",
+      "Application experiences brief outages during scale transitions",
+      "CPU/memory metrics hovering near threshold boundary"
+    ],
+    "root_cause": [
+      "HPA thresholds set too low causing sensitivity to normal load variations",
+      "Metrics collection delay causing stale data for scaling decisions",
+      "Scale-down and stabilization periods too short",
+      "Application has bursty traffic patterns"
+    ],
+    "diagnosis": [
+      "Check HPA events: kubectl describe hpa <hpa-name>",
+      "Review metrics: kubectl get hpa <hpa-name> -w",
+      "Examine current and desired replica counts",
+      "Analyze application metrics to understand load patterns"
+    ],
+    "fix": [
+      "Adjust HPA thresholds to accommodate normal load variations",
+      "Increase stabilization window to prevent rapid scale-down",
+      "Implement custom metrics for more accurate scaling decisions",
+      "Use metrics with appropriate delay for stable scaling"
+    ],
+    "prevention": [
+      "Set appropriate thresholds based on load testing results",
+      "Configure stabilization windows for scale-down events",
+      "Use predictive autoscaling for predictable traffic patterns",
+      "Monitor HPA behavior and adjust parameters over time"
+    ],
+    "tags": ["kubernetes", "hpa", "autoscaling", "performance"]
+  },
+  {
+    "id": "k8s-configmap-sync",
+    "title": "ConfigMap changes not reflected in running pods",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P3",
+    "popularity": 65,
+    "symptoms": [
+      "Updated configuration values not visible in application",
+      "Pods continue using old configuration after ConfigMap update",
+      "Application restart required to pick up changes",
+      "Rolling update of deployment does not refresh config"
+    ],
+    "root_cause": [
+      "ConfigMap mounted as volume but not configured for automatic reload",
+      "Application not watching for file changes in mounted volume",
+      "ConfigMap update triggered but pod not restarted",
+      "Using environment variables instead of volume mount"
+    ],
+    "diagnosis": [
+      "Check ConfigMap version: kubectl get configmap <name> -o yaml",
+      "Verify mounted volume in pod: kubectl describe pod <pod>",
+      "Check file contents in pod: kubectl exec <pod> -- cat /path/to/config",
+      "Review application code for config reload logic"
+    ],
+    "fix": [
+      "Implement application logic to watch and reload config files",
+      "Use rolling restart after ConfigMap update: kubectl rollout restart deployment <name>",
+      "Consider using tools like Reloader for automatic restarts",
+      "For env vars, trigger pod restart on ConfigMap change"
+    ],
+    "prevention": [
+      "Design applications to hot-reload configuration when possible",
+      "Use ConfigMap versioning to track changes",
+      "Document configuration update procedures",
+      "Consider using custom controllers for config synchronization"
+    ],
+    "tags": ["kubernetes", "configmap", "configuration", "volumes"]
+  },
+  {
+    "id": "k8s-service-dns",
+    "title": "Service DNS resolution failing intermittently",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 68,
+    "symptoms": [
+      "Applications cannot resolve service names to cluster IPs",
+      "DNS queries timeout or return NXDOMAIN",
+      "Service works with IP address but not DNS name",
+      "Issue affects only some namespaces or services"
+    ],
+    "root_cause": [
+      "CoreDNS pods not running or overloaded",
+      "DNS configuration misconfigured in kube-dns config",
+      "Network policies blocking DNS traffic",
+      "Service not created or not in same namespace"
+    ],
+    "diagnosis": [
+      "Check CoreDNS pods: kubectl get pods -n kube-system -l k8s-app=kube-dns",
+      "Test DNS from pod: kubectl exec <pod> -- nslookup kubernetes.default",
+      "Review CoreDNS logs: kubectl logs -n kube-system -l k8s-app=kube-dns",
+      "Verify service exists: kubectl get svc <service-name>"
+    ],
+    "fix": [
+      "Restart CoreDNS pods: kubectl rollout restart deployment coredns -n kube-system",
+      "Scale CoreDNS deployment if overloaded",
+      "Check and fix network policies blocking DNS traffic",
+      "Verify service is in correct namespace or use FQDN"
+    ],
+    "prevention": [
+      "Monitor CoreDNS resource usage and scale as needed",
+      "Use NodeLocal DNSCache to reduce DNS latency",
+      "Set up alerts for DNS resolution failures",
+      "Test DNS configuration after cluster changes"
+    ],
+    "tags": ["kubernetes", "dns", "coredns", "networking"]
+  },
+  {
+    "id": "k8s-pdb-eviction",
+    "title": "Pod disruptions causing downtime despite PodDisruptionBudget",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 60,
+    "symptoms": [
+      "Node maintenance causes service disruption",
+      "Pods evicted despite PDB configured",
+      "Availability drops below minimum required",
+      "Cluster autoscaler terminates pods unexpectedly"
+    ],
+    "root_cause": [
+      "PDB not correctly configured for workload",
+      "Min available set too high for current replica count",
+      "PDB not applied to all necessary pods",
+      "Node drain not respecting PDB constraints"
+    ],
+    "diagnosis": [
+      "Check PDB status: kubectl get pdb",
+      "Describe PDB: kubectl describe pdb <pdb-name>",
+      "Review current vs desired pod counts",
+      "Check events for PDB violations"
+    ],
+    "fix": [
+      "Configure PDB with appropriate min available or max unavailable",
+      "Ensure replica count satisfies PDB requirements",
+      "Apply PDB to all deployments and statefulsets",
+      "Use PDB with percentage-based limits for flexibility"
+    ],
+    "prevention": [
+      "Always create PDBs for critical workloads",
+      "Test PDB behavior during maintenance windows",
+      "Monitor PDB status and violations",
+      "Document PDB requirements for each service"
+    ],
+    "tags": ["kubernetes", "pdb", "availability", "maintenance"]
+  },
+  {
+    "id": "k8s-ingress-502",
+    "title": "Ingress controller returning 502 errors for backend services",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P1",
+    "popularity": 81,
+    "symptoms": [
+      "Ingress returns 502 Bad Gateway for valid routes",
+      "Service endpoints show as not ready",
+      "Backend pods healthy but ingress cannot reach them",
+      "Issue occurs intermittently under load"
+    ],
+    "root_cause": [
+      "Service selector not matching pod labels",
+      "Backend service not exposing correct port",
+      "Ingress controller health check failing",
+      "Network policies blocking ingress to backend pods"
+    ],
+    "diagnosis": [
+      "Check service endpoints: kubectl get endpoints <service-name>",
+      "Verify pod labels match service selector",
+      "Review ingress controller logs",
+      "Test network policies: kubectl get networkpolicies"
+    ],
+    "fix": [
+      "Fix service selector to match pod labels",
+      "Ensure service port matches container port",
+      "Configure proper health checks in ingress annotation",
+      "Update network policies to allow ingress traffic"
+    ],
+    "prevention": [
+      "Use label selectors consistently across services and pods",
+      "Implement proper health checks for all services",
+      "Test ingress configuration in staging environment",
+      "Monitor ingress error rates and set up alerts"
+    ],
+    "tags": ["kubernetes", "ingress", "networking", "services"]
+  },
+  {
+    "id": "k8s-etcd-compact",
+    "title": "etcd database growing too large causing performance issues",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 55,
+    "symptoms": [
+      "Kubernetes API server responses slow",
+      "etcd database size exceeding available disk space",
+      "Cluster operations timing out",
+      "etcd logs showing warning about database size"
+    ],
+    "root_cause": [
+      "etcd not configured for automatic compaction",
+      "Too many historical events retained",
+      "Frequent resource changes creating event churn",
+      "etcd quota not properly sized for cluster workload"
+    ],
+    "diagnosis": [
+      "Check etcd database size: ETCDCTL_API=3 etcdctl endpoint status --write-out=table",
+      "Review etcd compaction status",
+      "Monitor disk usage on etcd nodes",
+      "Check Kubernetes event retention settings"
+    ],
+    "fix": [
+      "Enable etcd auto-compaction in API server configuration",
+      "Manually compact etcd history: ETCDCTL_API=3 etcdctl compact <revision>",
+      "Defragment etcd database: ETCDCTL_API=3 etcdctl defrag",
+      "Reduce event retention period in cluster configuration"
+    ],
+    "prevention": [
+      "Enable automatic etcd compaction from cluster start",
+      "Set appropriate event retention periods",
+      "Monitor etcd database size and disk usage",
+      "Plan etcd capacity based on cluster size and workload"
+    ],
+    "tags": ["kubernetes", "etcd", "performance", "storage"]
+  },
+  {
+    "id": "k8s-rbac-denied",
+    "title": "Permission denied errors when accessing Kubernetes resources",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 70,
+    "symptoms": [
+      "Users or services receive 'User cannot <verb> <resource>' errors",
+      "Applications fail to create or modify resources",
+      "kubectl commands fail with authorization errors",
+      "ServiceAccount cannot access required API endpoints"
+    ],
+    "root_cause": [
+      "RBAC Role or ClusterRole not bound to user or service account",
+      "Role missing required verbs for the operation",
+      "Resource name or namespace not matching in role definition",
+      "Cluster-wide operation attempted with namespaced role"
+    ],
+    "diagnosis": [
+      "Check current permissions: kubectl auth can-i <verb> <resource>",
+      "Review role bindings: kubectl get rolebindings,clusterrolebindings",
+      "Inspect role definitions: kubectl get role,clusterrole -o yaml",
+      "Check service account permissions: kubectl get sa"
+    ],
+    "fix": [
+      "Create or update Role/ClusterRole with required permissions",
+      "Bind role to user or service account with RoleBinding or ClusterRoleBinding",
+      "Use kubectl create rolebinding to create missing bindings",
+      "For service accounts, ensure automountServiceAccountToken is enabled"
+    ],
+    "prevention": [
+      "Follow principle of least privilege when defining roles",
+      "Document required permissions for each application",
+      "Use RBAC audit tools to review permissions regularly",
+      "Test RBAC configuration in non-production environment"
+    ],
+    "tags": ["kubernetes", "rbac", "security", "permissions"]
+  },
+  {
+    "id": "k8s-liveness-probe",
+    "title": "Pods restarted unnecessarily due to failing liveness probe",
+    "tool": "Kubernetes",
+    "category": "Container Orchestration",
+    "severity": "P2",
+    "popularity": 66,
+    "symptoms": [
+      "Pods restarting repeatedly despite application being healthy",
+      "Liveness probe failing while readiness probe succeeds",
+      "Application logs show no errors but pod restarts",
+      "CrashLoopBackOff caused by liveness probe failures"
+    ],
+    "root_cause": [
+      "Liveness probe checking wrong endpoint or port",
+      "Probe timeout too short for application response",
+      "Application temporarily unresponsive during startup or load",
+      "Liveness and readiness probes using same endpoint incorrectly"
+    ],
+    "diagnosis": [
+      "Check probe status: kubectl describe pod <pod>",
+      "Test probe endpoint manually from within pod",
+      "Review probe configuration in pod spec",
+      "Check application logs during probe failures"
+    ],
+    "fix": [
+      "Fix liveness probe endpoint to check actual application health",
+      "Increase initialDelaySeconds to allow application startup",
+      "Increase timeoutSeconds and periodSeconds for slower applications",
+      "Consider removing liveness probe if application can self-recover"
+    ],
+    "prevention": [
+      "Design liveness probes to check for conditions requiring restart",
+      "Use separate endpoints for liveness and readiness probes",
+      "Test probe configurations in staging environment",
+      "Monitor restart reasons to identify probe issues"
+    ],
+    "tags": ["kubernetes", "probes", "healthcheck", "debugging"]
   }
 ]

@@ -67,5 +67,317 @@
       "Store an allow-list of auto-applied tags in a shared module"
     ],
     "tags": ["terraform", "drift", "tags", "aws"]
+  },
+  {
+    "id": "tf-provider-timeout",
+    "title": "Terraform provider operations timing out during apply",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P2",
+    "popularity": 67,
+    "symptoms": [
+      "Terraform apply hangs during provider operations",
+      "Context deadline exceeded errors in Terraform output",
+      "Operations succeed on retry but fail consistently first time",
+      "Long-running resource creation causing timeouts"
+    ],
+    "root_cause": [
+      "Default provider timeout too short for resource creation",
+      "Network latency between Terraform and cloud provider",
+      "Cloud provider API experiencing slow response times",
+      "Resource creation taking longer than expected"
+    ],
+    "diagnosis": [
+      "Check Terraform logs for timeout errors",
+      "Review provider configuration for timeout settings",
+      "Monitor cloud provider API response times",
+      "Test network connectivity to cloud provider"
+    ],
+    "fix": [
+      "Increase timeout in provider configuration with timeout setting",
+      "Add timeouts block to specific resources for create, update, and delete operations",
+      "Optimize network connectivity or run Terraform closer to provider",
+      "Break large operations into smaller sequential applies"
+    ],
+    "prevention": [
+      "Set appropriate timeouts for long-running resources",
+      "Run Terraform in regions close to cloud provider",
+      "Use Terraform Cloud/Enterprise for better reliability",
+      "Monitor and alert on long-running operations"
+    ],
+    "tags": ["terraform", "provider", "timeout", "performance"]
+  },
+  {
+    "id": "tf-module-version",
+    "title": "Terraform module version conflicts causing apply failures",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P2",
+    "popularity": 60,
+    "symptoms": [
+      "Module version constraint not satisfied error",
+      "Different modules requiring incompatible versions of shared dependency",
+      "terraform init fails to download required module versions",
+      "Apply succeeds in one environment but fails in another"
+    ],
+    "root_cause": [
+      "Module version constraints too restrictive",
+      "Dependency graph has conflicting version requirements",
+      "Module registry not accessible or version not found",
+      "Local module cache corrupted or outdated"
+    ],
+    "diagnosis": [
+      "Review module version constraints in configuration",
+      "Check terraform init output for dependency resolution errors",
+      "Examine .terraform/modules directory for cached versions",
+      "Test module version compatibility locally"
+    ],
+    "fix": [
+      "Relax version constraints to allow compatible versions",
+      "Update module references to use compatible versions",
+      "Clear local module cache: rm -rf .terraform",
+      "Use terraform get -update to force module refresh"
+    ],
+    "prevention": [
+      "Use semantic versioning for module releases",
+      "Document module version compatibility matrix",
+      "Implement dependency review in CI/CD pipeline",
+      "Use Terraform module registry for version management"
+    ],
+    "tags": ["terraform", "modules", "versioning", "dependencies"]
+  },
+  {
+    "id": "tf-backend-unreachable",
+    "title": "Terraform unable to reach remote backend for state operations",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P1",
+    "popularity": 73,
+    "symptoms": [
+      "Terraform init fails with backend unreachable error",
+      "State refresh operations timeout",
+      "Authentication errors when accessing remote state",
+      "Intermittent connectivity issues to backend"
+    ],
+    "root_cause": [
+      "Network connectivity issues to remote backend",
+      "Backend authentication credentials expired or invalid",
+      "Backend service down or experiencing issues",
+      "Firewall or proxy blocking backend access"
+    ],
+    "diagnosis": [
+      "Test network connectivity to backend endpoint",
+      "Verify backend authentication credentials",
+      "Check backend service status",
+      "Review firewall and proxy settings"
+    ],
+    "fix": [
+      "Fix network connectivity to remote backend",
+      "Update backend authentication credentials",
+      "Configure proxy settings in backend configuration if needed",
+      "Switch to alternative backend temporarily if needed"
+    ],
+    "prevention": [
+      "Use Terraform Cloud/Enterprise for managed backend",
+      "Implement backend health monitoring",
+      "Document backend configuration and troubleshooting steps",
+      "Use credential rotation with automatic updates"
+    ],
+    "tags": ["terraform", "backend", "state", "networking"]
+  },
+  {
+    "id": "tf-resource-import",
+    "title": "Terraform unable to import existing resources into state",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P2",
+    "popularity": 56,
+    "symptoms": [
+      "terraform import command fails with error",
+      "Imported resource does not match expected configuration",
+      "Resource ID not found or invalid",
+      "Import succeeds but state shows incorrect attributes"
+    ],
+    "root_cause": [
+      "Resource ID format incorrect for import",
+      "Resource configuration does not match actual resource",
+      "Provider not configured with correct permissions",
+      "Resource already exists in state with different ID"
+    ],
+    "diagnosis": [
+      "Verify resource exists and is accessible",
+      "Check provider documentation for correct import ID format",
+      "Compare resource configuration with actual resource attributes",
+      "Review terraform import error message for details"
+    ],
+    "fix": [
+      "Use correct resource ID format for import",
+      "Update resource configuration to match actual resource",
+      "Ensure provider has necessary permissions",
+      "Remove resource from state if incorrectly imported: terraform state rm"
+    ],
+    "prevention": [
+      "Document import procedures for each resource type",
+      "Test import in non-production environment first",
+      "Use terraform plan to compare configuration before import",
+      "Consider using terraform import for initial migration only"
+    ],
+    "tags": ["terraform", "import", "state", "migration"]
+  },
+  {
+    "id": "tf-cyclic-dependency",
+    "title": "Terraform configuration has cyclic dependencies preventing apply",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P2",
+    "popularity": 54,
+    "symptoms": [
+      "Terraform plan shows circular dependency error",
+      "Apply fails with dependency cycle detected",
+      "Resources cannot be created in any order",
+      "Configuration changes introduce dependency issues"
+    ],
+    "root_cause": [
+      "Resources reference each other creating a cycle",
+      "Implicit dependencies created through data sources",
+      "Module structure creating circular dependencies",
+      "Lifecycle configuration creating dependency issues"
+    ],
+    "diagnosis": [
+      "Review terraform graph output to visualize dependencies",
+      "Check resource references for circular patterns",
+      "Examine module structure for dependency cycles",
+      "Use terraform plan -verbose to see dependency graph"
+    ],
+    "fix": [
+      "Break dependency cycle by removing unnecessary references",
+      "Use depends_on explicitly to control dependency order",
+      "Refactor module structure to eliminate cycles",
+      "Use null_resource or local values to break indirect dependencies"
+    ],
+    "prevention": [
+      "Design infrastructure with clear dependency hierarchy",
+      "Review dependency graph during code review",
+      "Use terraform graph in CI to detect cycles early",
+      "Document intended dependency relationships"
+    ],
+    "tags": ["terraform", "dependencies", "cyclic", "architecture"]
+  },
+  {
+    "id": "tf-sensitive-data",
+    "title": "Sensitive data leaked in Terraform state or plan output",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P1",
+    "popularity": 78,
+    "symptoms": [
+      "Passwords or keys visible in terraform show output",
+      "State file contains unencrypted sensitive values",
+      "Plan output shows sensitive resource attributes",
+      "CI/CD logs exposing secrets in Terraform output"
+    ],
+    "root_cause": [
+      "Sensitive attributes not marked as sensitive in resource schema",
+      "State not encrypted at rest",
+      "Plan output not configured to hide sensitive data",
+      "Secrets passed as plain text variables"
+    ],
+    "diagnosis": [
+      "Review terraform show output for sensitive values",
+      "Check state file for unencrypted secrets",
+      "Examine CI/CD logs for exposed data",
+      "Review resource documentation for sensitive attributes"
+    ],
+    "fix": [
+      "Mark sensitive attributes with sensitive = true in output blocks",
+      "Enable state encryption at rest",
+      "Use environment variables or secret stores for sensitive inputs",
+      "Configure Terraform to hide sensitive values in plan output"
+    ],
+    "prevention": [
+      "Always use secret management for sensitive data",
+      "Enable state encryption for all backends",
+      "Review Terraform configuration for sensitive data exposure",
+      "Implement secret scanning in CI/CD pipeline"
+    ],
+    "tags": ["terraform", "security", "secrets", "state"]
+  },
+  {
+    "id": "tf-count-foreach",
+    "title": "Terraform count and foreach conflicts causing resource duplication",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P3",
+    "popularity": 51,
+    "symptoms": [
+      "Resources created multiple times unexpectedly",
+      "Plan shows more resources than expected",
+      "Count and foreach used together causing conflicts",
+      "Resource index errors when using count"
+    ],
+    "root_cause": [
+      "Using count and foreach on same resource or module",
+      "Count value includes null or empty elements",
+      "Foreach loop creating duplicate resources",
+      "Incorrect index usage when referencing count resources"
+    ],
+    "diagnosis": [
+      "Review resource configuration for count/foreach conflicts",
+      "Check terraform plan for unexpected resource count",
+      "Verify count value does not include null elements",
+      "Examine index references in resource dependencies"
+    ],
+    "fix": [
+      "Choose either count or foreach, not both",
+      "Use compact() function to remove null elements from count",
+      "Use foreach for complex iteration requirements",
+      "Fix index references to use correct syntax"
+    ],
+    "prevention": [
+      "Follow Terraform best practices for count vs foreach",
+      "Test configuration changes in terraform plan",
+      "Use locals to preprocess data before count/foreach",
+      "Document iteration strategy in module documentation"
+    ],
+    "tags": ["terraform", "count", "foreach", "iteration"]
+  },
+  {
+    "id": "tf-workspace-mismatch",
+    "title": "Resources created in wrong Terraform workspace",
+    "tool": "Terraform",
+    "category": "Infrastructure as Code",
+    "severity": "P2",
+    "popularity": 55,
+    "symptoms": [
+      "Resources appear in unexpected environment",
+      "Development changes affecting production resources",
+      "Workspace selector not working as expected",
+      "State shows resources from different workspaces mixed"
+    ],
+    "root_cause": [
+      "Terraform workspace not set before apply",
+      "Workspace configuration using incorrect state file",
+      "Multiple workspaces sharing same backend path",
+      "Workspace switching not persisted across sessions"
+    ],
+    "diagnosis": [
+      "Check current workspace: terraform workspace show",
+      "List all workspaces: terraform workspace list",
+      "Review backend configuration for workspace settings",
+      "Check state file location and workspace isolation"
+    ],
+    "fix": [
+      "Set correct workspace before operations: terraform workspace select <name>",
+      "Configure workspace-specific state paths in backend",
+      "Use environment variables to enforce workspace selection",
+      "Implement workspace validation in CI/CD pipeline"
+    ],
+    "prevention": [
+      "Always verify workspace before destructive operations",
+      "Use workspace names in state path for isolation",
+      "Implement workspace selection checks in CI/CD",
+      "Document workspace strategy and naming conventions"
+    ],
+    "tags": ["terraform", "workspaces", "state", "environments"]
   }
 ]

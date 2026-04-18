@@ -67,5 +67,317 @@
       "Upgrade kernel to one with conntrack fix"
     ],
     "tags": ["dns", "coredns", "kubernetes", "networking", "latency"]
+  },
+  {
+    "id": "haproxy-connection-reset",
+    "title": "HAProxy resetting connections under high load",
+    "tool": "HAProxy",
+    "category": "Networking",
+    "severity": "P1",
+    "popularity": 75,
+    "symptoms": [
+      "Clients receiving connection reset errors",
+      "HAProxy logs show connection resets during peak traffic",
+      "Backend servers healthy but connections dropped",
+      "Error rate spikes correlate with request volume"
+    ],
+    "root_cause": [
+      "Connection queue (backlog) too small for incoming connection rate",
+      "Max connections reached causing new connections to be dropped",
+      "Timeout settings too aggressive for backend response times",
+      "System file descriptors limit too low"
+    ],
+    "diagnosis": [
+      "Check HAProxy stats page for connection metrics",
+      "Review haproxy.log for connection reset messages",
+      "Monitor system connection limits: ulimit -n",
+      "Check backend response times"
+    ],
+    "fix": [
+      "Increase maxconn and backlog in HAProxy configuration",
+      "Raise system file descriptor limit: ulimit -n 100000",
+      "Adjust timeout values to match backend response times",
+      "Enable connection queue monitoring"
+    ],
+    "prevention": [
+      "Load test to determine appropriate connection limits",
+      "Monitor connection metrics and set up alerts",
+      "Implement connection rate limiting at the edge",
+      "Use connection pooling for backend servers"
+    ],
+    "tags": ["haproxy", "load-balancer", "connections", "performance"]
+  },
+  {
+    "id": "tls-certificate-expiry",
+    "title": "TLS certificates expiring causing service outages",
+    "tool": "TLS/SSL",
+    "category": "Networking",
+    "severity": "P1",
+    "popularity": 84,
+    "symptoms": [
+      "Services returning SSL certificate expired errors",
+      "Browsers blocking connections with security warnings",
+      "API clients failing to establish secure connections",
+      "Certificate monitoring alerts not firing before expiry"
+    ],
+    "root_cause": [
+      "Certificate renewal process not automated",
+      "Certificate authority renewal failed or delayed",
+      "Monitoring system not configured for certificate expiry",
+      "Multiple certificates with different expiry dates"
+    ],
+    "diagnosis": [
+      "Check certificate expiry: openssl x509 -enddate -noout -in cert.pem",
+      "Review certificate authority renewal status",
+      "Verify monitoring configuration for certificate alerts",
+      "Audit all certificates in use across infrastructure"
+    ],
+    "fix": [
+      "Renew expired certificate immediately with certificate authority",
+      "Implement automated certificate renewal with Let's Encrypt certbot",
+      "Update load balancer and service configurations with new certificates",
+      "Set up monitoring to alert 30 days before expiry"
+    ],
+    "prevention": [
+      "Automate certificate renewal with ACME protocol",
+      "Implement certificate monitoring with alerts",
+      "Use certificate management tools like cert-manager",
+      "Document certificate renewal procedures"
+    ],
+    "tags": ["tls", "ssl", "certificates", "security", "automation"]
+  },
+  {
+    "id": "iptables-rules",
+    "title": "iptables rules blocking legitimate traffic",
+    "tool": "iptables",
+    "category": "Networking",
+    "severity": "P1",
+    "popularity": 67,
+    "symptoms": [
+      "Applications cannot communicate despite network connectivity",
+      "Services accessible from some hosts but not others",
+      "Connection timeouts to specific ports or protocols",
+      "Issue resolved after iptables flush but returns after reboot"
+    ],
+    "root_cause": [
+      "Overly restrictive firewall rules blocking required traffic",
+      "Rule order causing legitimate traffic to be dropped by default deny",
+      "NAT or masquerading rules misconfigured",
+      "Conflicting rules from different management tools"
+    ],
+    "diagnosis": [
+      "List current rules: iptables -L -v -n",
+      "Check rule order and counters",
+      "Test with specific rules: iptables -A INPUT -p tcp --dport 80 -j ACCEPT",
+      "Review firewall configuration files"
+    ],
+    "fix": [
+      "Identify and remove overly restrictive rules",
+      "Add explicit allow rules for required traffic before deny rules",
+      "Fix NAT or masquerading configuration",
+      "Use firewall management tools like firewalld or UFW for consistency"
+    ],
+    "prevention": [
+      "Document firewall rules and their purpose",
+      "Use version control for firewall configurations",
+      "Test firewall changes in staging environment",
+      "Implement firewall rule validation scripts"
+    ],
+    "tags": ["iptables", "firewall", "networking", "security"]
+  },
+  {
+    "id": "vpn-tunnel-down",
+    "title": "VPN tunnel dropping frequently causing connectivity issues",
+    "tool": "VPN",
+    "category": "Networking",
+    "severity": "P2",
+    "popularity": 63,
+    "symptoms": [
+      "Inter-site connectivity intermittent",
+      "Applications losing connection to remote services",
+      "VPN logs showing tunnel re-establishment events",
+      "Performance degraded when tunnel is unstable"
+    ],
+    "root_cause": [
+      "Network instability or packet loss between endpoints",
+      "VPN keepalive or dead peer detection interval too short",
+      "NAT traversal issues with firewall or NAT devices",
+      "MTU mismatch causing packet fragmentation issues"
+    ],
+    "diagnosis": [
+      "Check VPN logs for tunnel establishment and teardown events",
+      "Monitor network connectivity with ping and traceroute",
+      "Review keepalive and DPD settings",
+      "Check for MTU issues: ping -M do -s 1472 <remote-host>"
+    ],
+    "fix": [
+      "Increase keepalive and DPD intervals to tolerate network instability",
+      "Configure NAT traversal settings for firewall compatibility",
+      "Adjust MTU settings to match network path",
+      "Implement tunnel monitoring and automatic recovery"
+    ],
+    "prevention": [
+      "Use stable network infrastructure for VPN endpoints",
+      "Configure appropriate keepalive settings for network conditions",
+      "Implement redundant VPN tunnels for high availability",
+      "Monitor VPN tunnel health and set up alerts"
+    ],
+    "tags": ["vpn", "tunnel", "networking", "connectivity"]
+  },
+  {
+    "id": "load-balancer-slow",
+    "title": "Load balancer introducing latency to client requests",
+    "tool": "Load Balancer",
+    "category": "Networking",
+    "severity": "P2",
+    "popularity": 69,
+    "symptoms": [
+      "Client response times higher when going through load balancer",
+      "Direct access to backend servers shows normal performance",
+      "Load balancer CPU or memory usage high",
+      "Connection establishment time increased"
+    ],
+    "root_cause": [
+      "Load balancer under-provisioned for traffic volume",
+      "SSL/TLS termination consuming significant resources",
+      "Inefficient load balancing algorithm causing uneven distribution",
+      "Health checks too frequent adding overhead"
+    ],
+    "diagnosis": [
+      "Monitor load balancer resource usage",
+      "Measure request latency through load balancer vs direct",
+      "Review load balancing algorithm configuration",
+      "Check health check frequency and impact"
+    ],
+    "fix": [
+      "Scale up load balancer resources or add more instances",
+      "Offload SSL/TLS to dedicated hardware or use passthrough",
+      "Optimize load balancing algorithm for workload",
+      "Adjust health check intervals to reduce overhead"
+    ],
+    "prevention": [
+      "Right-size load balancer based on expected traffic",
+      "Use connection pooling and keep-alive settings",
+      "Implement load balancer monitoring and auto-scaling",
+      "Regularly performance test load balancer capacity"
+    ],
+    "tags": ["load-balancer", "performance", "latency", "scaling"]
+  },
+  {
+    "id": "network-congestion",
+    "title": "Network congestion causing packet loss and retransmissions",
+    "tool": "Network",
+    "category": "Networking",
+    "severity": "P2",
+    "popularity": 71,
+    "symptoms": [
+      "Applications experiencing slow or intermittent connectivity",
+      "Network monitoring showing high packet loss rates",
+      "TCP retransmissions increasing during peak hours",
+      "Bandwidth utilization consistently near capacity"
+    ],
+    "root_cause": [
+      "Network bandwidth insufficient for traffic volume",
+      "Network device or link capacity exceeded",
+      "Broadcast storms or network loops causing congestion",
+      "Misconfigured QoS causing priority traffic to be dropped"
+    ],
+    "diagnosis": [
+      "Monitor bandwidth utilization with tools like iftop or nload",
+      "Check for packet loss: ping -c 100 <host> and mtr",
+      "Review switch/router interface statistics",
+      "Analyze network traffic patterns with NetFlow"
+    ],
+    "fix": [
+      "Upgrade network bandwidth or add additional links",
+      "Implement traffic shaping and QoS policies",
+      "Identify and eliminate broadcast storms or network loops",
+      "Optimize application traffic patterns and protocols"
+    ],
+    "prevention": [
+      "Monitor network capacity and plan for growth",
+      "Implement network segmentation to isolate traffic",
+      "Use QoS to prioritize critical traffic",
+      "Regularly audit network configuration and performance"
+    ],
+    "tags": ["network", "congestion", "bandwidth", "performance"]
+  },
+  {
+    "id": "dns-propagation",
+    "title": "DNS changes not propagating causing resolution failures",
+    "tool": "DNS",
+    "category": "Networking",
+    "severity": "P2",
+    "popularity": 74,
+    "symptoms": [
+      "New DNS records not resolving for some clients",
+      "DNS queries returning old IP addresses after changes",
+      "Some users can access services while others cannot",
+      "DNS changes take longer than expected to propagate"
+    ],
+    "root_cause": [
+      "DNS TTL values too high causing long caching",
+      "DNS resolvers not honoring TTL and caching longer",
+      "DNS zone not properly delegated to authoritative servers",
+      "DNS change not properly propagated to all authoritative servers"
+    ],
+    "diagnosis": [
+      "Check DNS record with multiple resolvers: dig <domain> @8.8.8.8",
+      "Review DNS TTL values: dig <domain> +noall +answer",
+      "Verify DNS delegation: dig NS <domain>",
+      "Check authoritative server responses"
+    ],
+    "fix": [
+      "Lower TTL values before making DNS changes",
+      "Verify DNS changes propagated to all authoritative servers",
+      "Flush DNS caches on local resolvers if needed",
+      "Use DNS monitoring tools to track propagation"
+    ],
+    "prevention": [
+      "Plan DNS changes with appropriate TTL lowering in advance",
+      "Use DNS monitoring to track propagation status",
+      "Implement DNS change management procedures",
+      "Consider using DNS providers with fast propagation"
+    ],
+    "tags": ["dns", "propagation", "networking", "troubleshooting"]
+  },
+  {
+    "id": "socks-proxy-timeout",
+    "title": "SOCKS proxy connections timing out for certain destinations",
+    "tool": "SOCKS Proxy",
+    "category": "Networking",
+    "severity": "P3",
+    "popularity": 53,
+    "symptoms": [
+      "Applications through proxy timeout for specific destinations",
+      "Direct connections to same destinations work fine",
+      "Proxy logs show connection attempts but no responses",
+      "Issue affects only certain protocols or ports"
+    ],
+    "root_cause": [
+      "Proxy access control rules blocking specific destinations",
+      "Proxy timeout settings too short for slow destinations",
+      "DNS resolution issues within proxy infrastructure",
+      "Proxy server resource limitations"
+    ],
+    "diagnosis": [
+      "Check proxy logs for connection attempts and denials",
+      "Test direct connectivity to affected destinations",
+      "Review proxy access control configuration",
+      "Monitor proxy server resource usage"
+    ],
+    "fix": [
+      "Update proxy access control rules to allow required destinations",
+      "Increase proxy timeout values for slow responding services",
+      "Fix DNS configuration on proxy server",
+      "Scale proxy resources or add additional proxy servers"
+    ],
+    "prevention": [
+      "Document proxy access control requirements",
+      "Implement proxy monitoring and alerting",
+      "Test proxy configuration with all required destinations",
+      "Use proxy auto-configuration for client management"
+    ],
+    "tags": ["proxy", "socks", "networking", "access-control"]
   }
 ]

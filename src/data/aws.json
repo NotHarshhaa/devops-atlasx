@@ -68,5 +68,326 @@
       "Write integration tests that read/write a canary object on deploy"
     ],
     "tags": ["aws", "s3", "iam", "kms", "403"]
+  },
+  {
+    "id": "aws-lambda-cold-start",
+    "title": "Lambda functions experiencing high cold start latency during traffic spikes",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 79,
+    "symptoms": [
+      "API Gateway 504 timeouts during initial requests after idle period",
+      "CloudWatch logs show initialization times > 5 seconds",
+      "Users report slow first-page load experience",
+      "Cold start rate spikes correlate with deployment events"
+    ],
+    "root_cause": [
+      "Lambda functions not provisioned with Provisioned Concurrency",
+      "Heavy initialization logic including large dependency bundles",
+      "VPC configuration adds network setup overhead during cold starts",
+      "Memory size too low causing slower initialization"
+    ],
+    "diagnosis": [
+      "Check CloudWatch Metrics → Lambda → Duration and InitDuration",
+      "Enable X-Ray tracing to visualize cold start patterns",
+      "Review function package size: `aws lambda get-function --function-name <name>`",
+      "Analyze traffic patterns to identify peak periods"
+    ],
+    "fix": [
+      "Enable Provisioned Concurrency for critical functions:",
+      "```bash\naws lambda put-provisioned-concurrency-config \\\n  --function-name my-function \\\n  --provisioned-concurrent-executions 10\n```",
+      "Optimize the handler by moving initialization outside the handler function",
+      "Increase memory allocation to improve CPU and initialization speed",
+      "Use Lambda SnapStart for Java functions to reduce cold starts"
+    ],
+    "prevention": [
+      "Implement a warming function that pings endpoints at regular intervals",
+      "Keep function packages under 50MB by using layers and removing unused dependencies",
+      "Use Graviton2 (arm64) architecture for better price-performance ratio",
+      "Set up CloudWatch alarms for cold start duration > 3 seconds"
+    ],
+    "tags": ["aws", "lambda", "cold-start", "performance", "serverless"]
+  },
+  {
+    "id": "aws-ec2-spot-termination",
+    "title": "EC2 Spot instances terminated unexpectedly causing workload disruption",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 71,
+    "symptoms": [
+      "Kubernetes nodes disappear from the cluster without graceful drain",
+      "Application pods rescheduled suddenly causing service degradation",
+      "CloudTrail shows ec2:TerminateInstances from AWS account",
+      "Spot instance interruption notice not handled properly"
+    ],
+    "root_cause": [
+      "Spot instances reclaimed by AWS when demand exceeds supply",
+      "No instance termination notice handling in the node bootstrap script",
+      "Spot instance price bid too low relative to current market",
+      "Workload not designed for fault-tolerant spot instance usage"
+    ],
+    "diagnosis": [
+      "Check EC2 console for Spot instance request status",
+      "Review Spot instance interruption notices in instance metadata: `curl http://169.254.169.254/latest/meta-data/spot/instance-action`",
+      "Examine CloudWatch logs for termination signals",
+      "Verify Spot instance price history in the console"
+    ],
+    "fix": [
+      "Implement Spot instance interruption notice handler in user data:",
+      "```bash\nwhile true; do\n  if [ $(curl -s http://169.254.169.254/latest/meta-data/spot/instance-action) ]; then\n    kubectl drain --ignore-daemonsets --delete-emptydir-data $HOSTNAME\n    kubectl delete node $HOSTNAME\n  fi\n  sleep 5\ndone\n```",
+      "Use EC2 Auto Scaling groups with mixed instance types",
+      "Enable Spot instance diversification across multiple instance pools",
+      "Implement graceful shutdown in applications to handle SIGTERM"
+    ],
+    "prevention": [
+      "Use Capacity Optimized allocation strategy for better Spot availability",
+      "Combine Spot with On-Demand or Reserved instances for base capacity",
+      "Set up fallback to On-Demand instances when Spot capacity unavailable",
+      "Monitor Spot instance interruption rate and adjust strategy accordingly"
+    ],
+    "tags": ["aws", "ec2", "spot", "kubernetes", "fault-tolerance"]
+  },
+  {
+    "id": "aws-cloudfront-origin-timeout",
+    "title": "CloudFront returning 504 Gateway Timeout from origin",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P1",
+    "popularity": 83,
+    "symptoms": [
+      "Users intermittently receive 504 errors from CloudFront URLs",
+      "CloudFront logs show origin response timeout",
+      "Origin server appears healthy when accessed directly",
+      "Issue worse during high traffic periods"
+    ],
+    "root_cause": [
+      "Origin response time exceeds CloudFront default timeout of 30 seconds",
+      "Origin server under-provisioned for the incoming request volume",
+      "Database queries at origin layer running slowly",
+      "Network latency between CloudFront edge and origin server"
+    ],
+    "diagnosis": [
+      "Check CloudFront logs for 504 errors and origin response times",
+      "Access origin server directly to measure response time",
+      "Review CloudWatch metrics for origin server CPU and memory",
+      "Use trace tools to identify slow downstream dependencies"
+    ],
+    "fix": [
+      "Increase origin timeout in CloudFront distribution settings to 60 seconds via console or CLI",
+      "Optimize origin server performance with caching and database indexing",
+      "Implement Lambda@Edge for caching dynamic responses",
+      "Scale origin infrastructure horizontally to handle increased load"
+    ],
+    "prevention": [
+      "Set up CloudWatch alarms for 504 error rate > 1%",
+      "Implement origin shielding for high-traffic distributions",
+      "Use origin failover with secondary origin for high availability",
+      "Regularly load test origin capacity"
+    ],
+    "tags": ["aws", "cloudfront", "cdn", "timeout", "performance"]
+  },
+  {
+    "id": "aws-eks-node-not-ready",
+    "title": "EKS worker nodes stuck in NotReady state after cluster upgrade",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P1",
+    "popularity": 86,
+    "symptoms": [
+      "kubectl get nodes shows nodes in NotReady status",
+      "Pods cannot be scheduled on new nodes",
+      "Node readiness probe failing or kubelet not responding",
+      "Cluster upgrade or node group replacement triggered the issue"
+    ],
+    "root_cause": [
+      "Outdated kubelet version incompatible with control plane",
+      "Missing or incorrect IAM permissions for node IAM role",
+      "Security group blocking communication between nodes and control plane",
+      "VPC CNI plugin not properly installed or configured"
+    ],
+    "diagnosis": [
+      "Check node status and conditions: kubectl describe node <node-name>",
+      "Review kubelet logs on the node: journalctl -u kubelet",
+      "Verify IAM role has required EKS permissions",
+      "Check security group rules for allowed ports (1025-65535 for VPC CNI)"
+    ],
+    "fix": [
+      "Update the kubelet version to match EKS control plane:",
+      "```bash\n# On the node\nsudo /etc/eks/bootstrap.sh <cluster-name> --b64-cluster-ca <ca-cert> --apiserver-endpoint <endpoint>\n```",
+      "Ensure node IAM role has AmazonEKSWorkerNodePolicy attached",
+      "Update security group to allow required traffic:",
+      "```bash\naws ec2 authorize-security-group-ingress \\\n  --group-id <sg-id> \\\n  --protocol tcp \\\n  --port 1025-65535 \\\n  --source <cidr>\n```",
+      "Restart kubelet: sudo systemctl restart kubelet"
+    ],
+    "prevention": [
+      "Use EKS managed node groups for automatic version management",
+      "Implement node readiness checks in CI/CD pipeline",
+      "Set up CloudWatch alarms for NotReady nodes",
+      "Test node upgrades in staging environment before production"
+    ],
+    "tags": ["aws", "eks", "kubernetes", "nodes", "upgrade"]
+  },
+  {
+    "id": "aws-sqs-dlq-full",
+    "title": "SQS Dead Letter Queue filling up with unprocessed messages",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 68,
+    "symptoms": [
+      "DLQ message count increasing steadily",
+      "Processing backlog growing in main queue",
+      "Applications not receiving expected messages",
+      "CloudWatch alarm triggered for DLQ depth"
+    ],
+    "root_cause": [
+      "Worker function consistently failing to process messages",
+      "Message format changed breaking consumer logic",
+      "Processing timeout too short for complex operations",
+      "Poison pill messages causing repeated failures"
+    ],
+    "diagnosis": [
+      "Check SQS metrics for NumberOfMessagesReceived vs Deleted",
+      "Review CloudWatch Logs for consumer function errors",
+      "Sample messages from DLQ to inspect content",
+      "Check receive count on messages to identify retry patterns"
+    ],
+    "fix": [
+      "Inspect and redrive messages from DLQ after fixing consumer:",
+      "```bash\naws sqs start-message-move-task \\\n  --source-arn <dlq-arn> \\\n  --destination-arn <main-queue-arn> \\\n  --max-number-of-messages-per-second 10\n```",
+      "Increase visibility timeout to match processing time",
+      "Add message validation and error handling in consumer",
+      "Implement dead letter queue monitoring and alerting"
+    ],
+    "prevention": [
+      "Set up alarm on DLQ message count > threshold",
+      "Implement circuit breaker pattern for failing consumers",
+      "Add comprehensive logging for message processing failures",
+      "Regularly test message format compatibility with consumers"
+    ],
+    "tags": ["aws", "sqs", "dlq", "messaging", "debugging"]
+  },
+  {
+    "id": "aws-rds-slow-query",
+    "title": "RDS database experiencing slow query performance degrading application",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 75,
+    "symptoms": [
+      "Application API response times increased significantly",
+      "Database CPU utilization consistently high",
+      "Performance Insights showing top SQL queries with high latency",
+      "Users reporting timeouts on data-heavy operations"
+    ],
+    "root_cause": [
+      "Missing or inefficient database indexes on frequently queried columns",
+      "Full table scans on large tables instead of index seeks",
+      "N+1 query patterns in application code",
+      "Database instance class under-provisioned for workload"
+    ],
+    "diagnosis": [
+      "Enable and review slow query log in RDS parameter group",
+      "Use Performance Insights to identify top resource-consuming queries",
+      "Run EXPLAIN ANALYZE on problematic queries",
+      "Check CloudWatch metrics for CPU, memory, and IOPS utilization"
+    ],
+    "fix": [
+      "Add appropriate indexes to frequently queried columns:",
+      "```sql\nCREATE INDEX idx_user_created_at ON users(created_at);\nCREATE INDEX CONCURRENTLY idx_order_status ON orders(status);\n```",
+      "Optimize queries by selecting only needed columns",
+      "Refactor application code to use JOINs instead of N+1 queries",
+      "Scale up database instance class or enable read replicas"
+    ],
+    "prevention": [
+      "Enable Performance Insights and review regularly",
+      "Implement query review process in code reviews",
+      "Set up CloudWatch alarms for database CPU > 80%",
+      "Use read replicas for read-heavy workloads"
+    ],
+    "tags": ["aws", "rds", "database", "performance", "sql"]
+  },
+  {
+    "id": "aws-api-gateway-throttle",
+    "title": "API Gateway returning 429 Too Many Requests during traffic spikes",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 72,
+    "symptoms": [
+      "Clients receiving 429 error responses from API endpoints",
+      "Spike in 429 errors correlates with marketing campaigns or events",
+      "Legitimate traffic being rejected causing user frustration",
+      "CloudWatch metrics showing throttled requests"
+    ],
+    "root_cause": [
+      "API Gateway default account-level and method-level limits too low",
+      "Burst capacity exhausted during sudden traffic increases",
+      "No usage plan configured for rate limiting and quotas",
+      "Downstream services cannot handle the request rate"
+    ],
+    "diagnosis": [
+      "Check CloudWatch metrics for Count, 4XXError, and 5XXError",
+      "Review API Gateway dashboard for throttle metrics",
+      "Inspect usage plan settings if configured",
+      "Analyze request patterns to identify legitimate vs abusive traffic"
+    ],
+    "fix": [
+      "Request service quota increase for API Gateway:",
+      "```bash\naws service-quotas request-service-quota-increase \\\n  --service-code apigateway \\\n  --quota-code L-xxxxx \\\n  --desired-value 10000\n```",
+      "Configure usage plan with appropriate rate and burst limits through the AWS console or CLI",
+      "Implement caching at API Gateway level to reduce backend load",
+      "Add exponential backoff retry logic in client applications"
+    ],
+    "prevention": [
+      "Set up CloudWatch alarms for 429 error rate > threshold",
+      "Load test API endpoints before major events",
+      "Implement caching strategies for frequently accessed data",
+      "Use AWS WAF to filter abusive traffic patterns"
+    ],
+    "tags": ["aws", "api-gateway", "throttling", "rate-limiting", "performance"]
+  },
+  {
+    "id": "aws-dynamodb-throttle",
+    "title": "DynamoDB operations throttled due to exceeded capacity",
+    "tool": "AWS",
+    "category": "Cloud",
+    "severity": "P2",
+    "popularity": 69,
+    "symptoms": [
+      "Application receiving ProvisionedThroughputExceededException errors",
+      "Read and write operations failing intermittently",
+      "CloudWatch metrics showing throttled requests",
+      "Performance degradation during peak usage hours"
+    ],
+    "root_cause": [
+      "Provisioned throughput insufficient for actual workload",
+      "Hot partition issue where access pattern not evenly distributed",
+      "Burst traffic exceeding capacity limits",
+      "Incorrect capacity estimation during table design"
+    ],
+    "diagnosis": [
+      "Check CloudWatch metrics for ConsumedReadCapacityUnits and ThrottledRequests",
+      "Review DynamoDB console for capacity utilization graphs",
+      "Analyze access patterns for partition key distribution",
+      "Examine error logs for throttling patterns"
+    ],
+    "fix": [
+      "Switch to on-demand capacity mode for unpredictable workloads:",
+      "```bash\naws dynamodb update-table \\\n  --table-name my-table \\\n  --billing-mode PAY_PER_REQUEST\n```",
+      "Increase provisioned capacity for consistent workloads:",
+      "```bash\naws dynamodb update-table \\\n  --table-name my-table \\\n  --provisioned-throughput ReadCapacityUnits=100,WriteCapacityUnits=50\n```",
+      "Implement exponential backoff in application retries",
+      "Use DynamoDB Accelerator (DAX) for read-heavy workloads"
+    ],
+    "prevention": [
+      "Use on-demand mode for unpredictable or spiky workloads",
+      "Design partition keys for even access distribution",
+      "Implement auto-scaling for provisioned capacity",
+      "Set up CloudWatch alarms for throttled requests"
+    ],
+    "tags": ["aws", "dynamodb", "throttling", "capacity", "database"]
   }
 ]

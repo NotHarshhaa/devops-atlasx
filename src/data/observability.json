@@ -68,5 +68,317 @@
       "Use ILM to keep shards below 50GB each"
     ],
     "tags": ["elasticsearch", "cluster", "shards", "observability"]
+  },
+  {
+    "id": "grafana-datasource-error",
+    "title": "Grafana dashboards showing no data due to datasource errors",
+    "tool": "Grafana",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 72,
+    "symptoms": [
+      "Dashboards display 'No data' or 'Datasource error' messages",
+      "Queries in query editor fail with connection errors",
+      "Datasource test shows successful connection but queries fail",
+      "Some panels work while others show errors"
+    ],
+    "root_cause": [
+      "Datasource authentication credentials expired or invalid",
+      "Datasource endpoint changed or unreachable",
+      "Query syntax incompatible with datasource version",
+      "Timeout settings too short for complex queries"
+    ],
+    "diagnosis": [
+      "Check datasource configuration in Grafana",
+      "Test datasource connection from Grafana UI",
+      "Review datasource logs for error messages",
+      "Test query directly against datasource"
+    ],
+    "fix": [
+      "Update datasource credentials and connection details",
+      "Verify datasource endpoint is accessible from Grafana",
+      "Fix query syntax to match datasource API version",
+      "Increase query timeout settings in datasource configuration"
+    ],
+    "prevention": [
+      "Monitor datasource health and set up alerts",
+      "Use environment variables for sensitive credentials",
+      "Test dashboards after datasource updates",
+      "Document datasource configuration and query patterns"
+    ],
+    "tags": ["grafana", "dashboards", "datasource", "monitoring"]
+  },
+  {
+    "id": "loki-rate-limit",
+    "title": "Loki logs being dropped due to ingestion rate limits",
+    "tool": "Loki",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 58,
+    "symptoms": [
+      "Missing log lines in Loki queries",
+      "Promtail logs showing rate limit errors",
+      "Loki metrics showing dropped log entries",
+      "Recent logs not appearing in Grafana"
+    ],
+    "root_cause": [
+      "Ingestion rate limit exceeded due to log volume spike",
+      "Stream limits too low for number of log streams",
+      "Burst rate limit too small for log patterns",
+      "Unstructured logs creating too many unique streams"
+    ],
+    "diagnosis": [
+      "Check Loki metrics for rate limit violations",
+      "Review Promtail logs for ingestion errors",
+      "Monitor number of active streams",
+      "Analyze log volume patterns"
+    ],
+    "fix": [
+      "Increase ingestion rate limit in Loki configuration",
+      "Adjust stream limits to accommodate workload",
+      "Implement log sampling or filtering to reduce volume",
+      "Use structured logging to reduce stream cardinality"
+    ],
+    "prevention": [
+      "Monitor log volume and adjust limits proactively",
+      "Implement structured logging with consistent labels",
+      "Use log aggregation and filtering at source",
+      "Set up alerts for rate limit violations"
+    ],
+    "tags": ["loki", "logging", "rate-limit", "promtail"]
+  },
+  {
+    "id": "tempo-trace-missing",
+    "title": "Traces not appearing in Tempo despite application instrumentation",
+    "tool": "Tempo",
+    "category": "Observability",
+    "severity": "P3",
+    "popularity": 52,
+    "symptoms": [
+      "Application sends traces but Tempo shows no data",
+      "Tempo UI displays 'No traces found' for queries",
+      "Trace ID exists in application but not searchable",
+      "Intermittent trace loss affecting some services"
+    ],
+    "root_cause": [
+      "Tempo ingestion endpoint not reachable from application",
+      "Trace sampling rate too low causing traces to be dropped",
+      "Batch size or timeout settings misconfigured",
+      "Tempo storage backend having issues"
+    ],
+    "diagnosis": [
+      "Check Tempo ingestion metrics and logs",
+      "Verify application trace exporter configuration",
+      "Test network connectivity to Tempo endpoint",
+      "Review Tempo storage backend health"
+    ],
+    "fix": [
+      "Fix network connectivity to Tempo ingestion endpoint",
+      "Increase trace sampling rate in application configuration",
+      "Adjust batch size and timeout settings in trace exporter",
+      "Check and fix Tempo storage backend issues"
+    ],
+    "prevention": [
+      "Monitor Tempo ingestion metrics and set up alerts",
+      "Test trace export during application deployment",
+      "Document trace exporter configuration",
+      "Use appropriate sampling rates for production workload"
+    ],
+    "tags": ["tempo", "tracing", "observability", "monitoring"]
+  },
+  {
+    "id": "alertmanager-silence",
+    "title": "Alertmanager not firing alerts due to incorrect silence configuration",
+    "tool": "Alertmanager",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 61,
+    "symptoms": [
+      "Critical alerts not being sent despite trigger conditions met",
+      "Alerts showing in Prometheus but not in Alertmanager",
+      "Silences blocking alerts unexpectedly",
+      "Alert routing not working as expected"
+    ],
+    "root_cause": [
+      "Silence rules too broad matching all alerts",
+      "Silence not expired after maintenance window",
+      "Alert routing configuration incorrect",
+      "Receiver configuration missing or misconfigured"
+    ],
+    "diagnosis": [
+      "Check active silences in Alertmanager UI",
+      "Review alert routing tree configuration",
+      "Verify receiver configurations",
+      "Check Alertmanager logs for routing decisions"
+    ],
+    "fix": [
+      "Remove or update overly broad silence rules",
+      "Set proper expiry times for maintenance silences",
+      "Fix alert routing configuration",
+      "Verify and test receiver configurations"
+    ],
+    "prevention": [
+      "Use specific matchers in silence rules",
+      "Document silence procedures and expiry policies",
+      "Test alert routing after configuration changes",
+      "Implement alert management best practices"
+    ],
+    "tags": ["alertmanager", "alerts", "routing", "monitoring"]
+  },
+  {
+    "id": "jaeger-collector-down",
+    "title": "Jaeger collector not receiving spans from agents",
+    "tool": "Jaeger",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 54,
+    "symptoms": [
+      "Jaeger UI showing no traces despite application sending spans",
+      "Agent logs showing connection failures to collector",
+      "Collector metrics showing zero span ingestion",
+      "Traces available locally but not in centralized Jaeger"
+    ],
+    "root_cause": [
+      "Collector service not running or crashed",
+      "Network connectivity between agents and collector blocked",
+      "Collector endpoint misconfigured in agents",
+      "Collector overwhelmed by span volume"
+    ],
+    "diagnosis": [
+      "Check collector service status and logs",
+      "Verify network connectivity from agents to collector",
+      "Review agent configuration for collector endpoint",
+      "Monitor collector resource usage"
+    ],
+    "fix": [
+      "Restart or fix Jaeger collector service",
+      "Fix network connectivity between agents and collector",
+      "Update agent configuration with correct collector endpoint",
+      "Scale collector resources to handle span volume"
+    ],
+    "prevention": [
+      "Monitor collector health and set up alerts",
+      "Implement collector high availability",
+      "Test connectivity after infrastructure changes",
+      "Document collector deployment and configuration"
+    ],
+    "tags": ["jaeger", "tracing", "collector", "observability"]
+  },
+  {
+    "id": "vector-buffer-overflow",
+    "title": "Vector log pipeline dropping events due to buffer overflow",
+    "tool": "Vector",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 49,
+    "symptoms": [
+      "Missing log events in output destinations",
+      "Vector metrics showing buffer overflow events",
+      "Log loss during traffic spikes",
+      "Backpressure causing source slowdown"
+    ],
+    "root_cause": [
+      "Buffer size too small for incoming event rate",
+      "Output sink slower than input source",
+      "Network issues blocking output delivery",
+      "CPU or memory limitations on Vector instance"
+    ],
+    "diagnosis": [
+      "Check Vector metrics for buffer usage and overflow",
+      "Monitor event throughput rates",
+      "Review sink connectivity and performance",
+      "Check Vector resource utilization"
+    ],
+    "fix": [
+      "Increase buffer size in Vector configuration",
+      "Optimize sink performance or add capacity",
+      "Implement batching and compression in sinks",
+      "Scale Vector resources or add more instances"
+    ],
+    "prevention": [
+      "Monitor buffer usage and set up alerts",
+      "Right-size buffers based on expected throughput",
+      "Implement load testing for log pipelines",
+      "Use disk-based buffers for durability"
+    ],
+    "tags": ["vector", "logging", "buffer", "pipeline"]
+  },
+  {
+    "id": "thanos-compaction",
+    "title": "Thanos compaction falling behind causing query performance degradation",
+    "tool": "Thanos",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 51,
+    "symptoms": [
+      "Thanos Store API queries becoming slow",
+      "Compaction lag metrics showing increasing delay",
+      "High object storage API costs due to uncompacted data",
+      "Query timeouts for long time ranges"
+    ],
+    "root_cause": [
+      "Compaction resources insufficient for data volume",
+      "Compaction interval too long for data growth rate",
+      "Compaction job not running or failing",
+      "Object storage throttling compaction operations"
+    ],
+    "diagnosis": [
+      "Check Thanos compactor metrics and logs",
+      "Monitor compaction lag in Thanos UI",
+      "Review object storage API metrics",
+      "Verify compaction job schedule"
+    ],
+    "fix": [
+      "Scale compactor resources to handle data volume",
+      "Reduce compaction interval for more frequent runs",
+      "Fix compaction job issues and restart if needed",
+      "Optimize object storage configuration for compaction workload"
+    ],
+    "prevention": [
+      "Monitor compaction lag and set up alerts",
+      "Right-size compactor based on data growth",
+      "Test compaction configuration in staging",
+      "Document compaction strategy and retention policies"
+    ],
+    "tags": ["thanos", "prometheus", "compaction", "storage"]
+  },
+  {
+    "id": "opentelemetry-export",
+    "title": "OpenTelemetry exporter failing to send telemetry to backend",
+    "tool": "OpenTelemetry",
+    "category": "Observability",
+    "severity": "P2",
+    "popularity": 57,
+    "symptoms": [
+      "Application metrics not appearing in backend",
+      "OTel collector logs showing export failures",
+      "Telemetry data loss during transmission",
+      "High memory usage in OTel SDK due to batching"
+    ],
+    "root_cause": [
+      "Exporter endpoint unreachable or misconfigured",
+      "Authentication credentials invalid or expired",
+      "Batch size too large causing rejections",
+      "Network issues blocking telemetry transmission"
+    ],
+    "diagnosis": [
+      "Check OTel exporter configuration",
+      "Review collector logs for export errors",
+      "Test connectivity to backend endpoint",
+      "Monitor SDK metrics for export failures"
+    ],
+    "fix": [
+      "Fix exporter endpoint configuration",
+      "Update authentication credentials",
+      "Adjust batch size and timeout settings",
+      "Implement retry logic and backoff in exporter"
+    ],
+    "prevention": [
+      "Monitor exporter success rate and set up alerts",
+      "Test telemetry export during deployment",
+      "Use environment variables for endpoint configuration",
+      "Implement circuit breaker for failing backends"
+    ],
+    "tags": ["opentelemetry", "telemetry", "exporter", "monitoring"]
   }
 ]
