@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
-
-import { Button } from "@/components/ui/button";
+import * as React from 'react';
+import { MoonIcon, SunIcon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { useTheme } from 'next-themes';
+import { Button } from '@/components/ui/button';
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -14,17 +14,23 @@ export function ThemeToggle() {
     setMounted(true);
   }, []);
 
-  const isDark = mounted && theme === "dark";
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      aria-label="Toggle theme"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
+      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      className="gap-2"
     >
-      <Sun className="h-[1.15rem] w-[1.15rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-[1.15rem] w-[1.15rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      {theme === 'dark' ? (
+        <HugeiconsIcon icon={SunIcon} size={20} />
+      ) : (
+        <HugeiconsIcon icon={MoonIcon} size={20} />
+      )}
+      <span className="sr-only">Toggle theme</span>
     </Button>
   );
 }

@@ -1,259 +1,184 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import {
-  AlertTriangle,
-  ArrowLeft,
-  CheckCircle2,
-  Flame,
-  ShieldCheck,
-  Stethoscope,
-  Wrench,
-} from "lucide-react";
+'use client';
 
-import { IssueCard } from "@/components/issue-card";
-import { IssueContent } from "@/components/issue-content";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { getAllIssues, getIssueById } from "@/lib/issues";
-import type { Severity } from "@/lib/types";
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { getIssueById } from '@/lib/issues';
+import type { Issue } from '@/lib/types';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
 
-const severityVariant: Record<Severity, "p1" | "p2" | "p3"> = {
-  P1: "p1",
-  P2: "p2",
-  P3: "p3",
-};
+export default function IssueDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const issueId = params.id as string;
+  const issue = getIssueById(issueId);
 
-const severityLabel: Record<Severity, string> = {
-  P1: "P1 · Critical",
-  P2: "P2 · Major",
-  P3: "P3 · Minor",
-};
-
-export function generateStaticParams() {
-  return getAllIssues().map((issue) => ({ id: issue.id }));
-}
-
-export function generateMetadata({ params }: { params: { id: string } }) {
-  const issue = getIssueById(params.id);
-  if (!issue) return { title: "Issue not found" };
-  return {
-    title: `${issue.title} · DevOps AtlasX`,
-    description: issue.symptoms[0] ?? issue.title,
+  const severityColors: Record<string, string> = {
+    'P1': 'bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200',
+    'P2': 'bg-gray-700 text-white hover:bg-gray-600 dark:bg-gray-300 dark:text-black dark:hover:bg-gray-400',
+    'P3': 'bg-gray-400 text-white hover:bg-gray-500 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-500',
   };
-}
 
-export default function IssueDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const issue = getIssueById(params.id);
-  if (!issue) notFound();
+  if (!issue) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-black dark:to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-black dark:text-white mb-4">
+            Issue Not Found
+          </h1>
+          <Link href="/issues">
+            <Button variant="outline">
+              Back to Issues
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
-  const related = getAllIssues()
-    .filter(
-      (candidate) =>
-        candidate.id !== issue.id &&
-        (candidate.tool === issue.tool ||
-          candidate.category === issue.category ||
-          candidate.tags.some((tag) => issue.tags.includes(tag)))
-    )
-    .slice(0, 3);
+  const renderContent = (items: string[]) => {
+    return items.map((item, index) => {
+      // Check if item contains code blocks
+      if (item.includes('```')) {
+        const parts = item.split('```');
+        return (
+          <div key={index} className="mb-3">
+            {parts.map((part, partIndex) => {
+              if (partIndex % 2 === 1) {
+                // This is a code block
+                const firstLineBreak = part.indexOf('\n');
+                let language = 'bash';
+                let code = part;
+                
+                if (firstLineBreak !== -1) {
+                  language = part.substring(0, firstLineBreak).trim();
+                  code = part.substring(firstLineBreak + 1);
+                }
+                
+                return (
+                  <pre key={partIndex} className="bg-gray-900 dark:bg-gray-950 text-gray-50 p-4 rounded-lg overflow-x-auto my-2">
+                    <code>{code}</code>
+                  </pre>
+                );
+              } else {
+                return <span key={partIndex}>{part}</span>;
+              }
+            })}
+          </div>
+        );
+      }
+      return <li key={index} className="mb-2">{item}</li>;
+    });
+  };
 
   return (
-    <article className="container py-8 sm:py-10">
-      <div className="mb-4">
-        <Button asChild variant="ghost" size="sm" className="-ml-2">
-          <Link href="/issues">
-            <ArrowLeft className="h-4 w-4" /> All issues
-          </Link>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-black dark:to-gray-900">
+      {/* Back Button */}
+      <div className="container mx-auto px-4 pt-8">
+        <Button variant="ghost" onClick={() => router.back()} className="gap-2">
+          <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
+          Back
         </Button>
       </div>
 
-      <header className="flex flex-col gap-4 border-b pb-6">
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
-            <span className="inline-block h-2 w-2 rounded-full bg-primary/80" />
-            {issue.tool}
-          </span>
-          <span>·</span>
-          <span>{issue.category}</span>
-          <span>·</span>
-          <span className="inline-flex items-center gap-1">
-            <Flame className="h-3.5 w-3.5" />
-            popularity {issue.popularity}
-          </span>
-        </div>
-        <h1 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
-          {issue.title}
-        </h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={severityVariant[issue.severity]}>
-            {severityLabel[issue.severity]}
-          </Badge>
-          {issue.tags.map((tag) => (
-            <Link
-              key={tag}
-              href={`/issues?tag=${encodeURIComponent(tag)}`}
-              className="rounded-md border bg-background px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
-            >
-              #{tag}
-            </Link>
-          ))}
-        </div>
-      </header>
-
-      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <div className="space-y-6">
-          <Section
-            icon={<AlertTriangle className="h-4 w-4" />}
-            title="Symptoms"
-            description="What you observe in production"
-          >
-            <IssueContent items={issue.symptoms} />
-          </Section>
-
-          <Section
-            icon={<Stethoscope className="h-4 w-4" />}
-            title="Root cause"
-            description="Why this really happens"
-          >
-            <IssueContent items={issue.root_cause} />
-          </Section>
-
-          <Section
-            icon={<Stethoscope className="h-4 w-4" />}
-            title="Diagnosis"
-            description="Commands and signals to confirm the hypothesis"
-          >
-            <IssueContent items={issue.diagnosis} ordered />
-          </Section>
-
-          <Section
-            icon={<Wrench className="h-4 w-4" />}
-            title="Fix"
-            description="Field-tested remediation, runnable in a terminal"
-            accent
-          >
-            <IssueContent items={issue.fix} ordered />
-          </Section>
-
-          <Section
-            icon={<ShieldCheck className="h-4 w-4" />}
-            title="Prevention"
-            description="Keep it from coming back"
-          >
-            <IssueContent items={issue.prevention} />
-          </Section>
-        </div>
-
-        <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                At a glance
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <MetaRow label="Tool" value={issue.tool} />
-              <MetaRow label="Category" value={issue.category} />
-              <MetaRow label="Severity" value={severityLabel[issue.severity]} />
-              <MetaRow label="Popularity" value={String(issue.popularity)} />
-              <Separator />
-              <MetaRow
-                label="Symptoms"
-                value={`${issue.symptoms.length} observed`}
-              />
-              <MetaRow
-                label="Fix steps"
-                value={`${issue.fix.length} step${issue.fix.length > 1 ? "s" : ""}`}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                Runbook ready
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-xs text-muted-foreground">
-              Copy any command with one click, or link this playbook in your
-              incident channel.
-            </CardContent>
-          </Card>
-        </aside>
-      </div>
-
-      {related.length > 0 && (
-        <section className="mt-12">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-semibold tracking-tight">
-              Related playbooks
-            </h2>
-            <Button asChild variant="ghost" size="sm">
-              <Link href={`/issues?tool=${encodeURIComponent(issue.tool)}`}>
-                More {issue.tool} issues
-              </Link>
-            </Button>
+      {/* Content */}
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Title and Meta */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Badge className={severityColors[issue.severity]}>
+              {issue.severity}
+            </Badge>
+            <Badge variant="outline" className="text-gray-600 dark:text-gray-400">
+              {issue.tool}
+            </Badge>
+            <Badge variant="secondary">
+              {issue.category}
+            </Badge>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((r) => (
-              <IssueCard key={r.id} issue={r} compact />
+          <h1 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-4">
+            {issue.title}
+          </h1>
+          <div className="flex flex-wrap gap-2">
+            {issue.tags.map((tag) => (
+              <Badge key={tag} variant="outline" className="text-xs">
+                {tag}
+              </Badge>
             ))}
           </div>
-        </section>
-      )}
-    </article>
-  );
-}
-
-function Section({
-  icon,
-  title,
-  description,
-  children,
-  accent = false,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-  accent?: boolean;
-}) {
-  return (
-    <Card className={accent ? "border-primary/30 bg-primary/[0.03]" : undefined}>
-      <CardHeader className="pb-3">
-        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md border bg-background text-muted-foreground">
-            {icon}
-          </span>
-          {title}
         </div>
-        {description && (
-          <p className="text-xs text-muted-foreground">{description}</p>
-        )}
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
-  );
-}
 
-function MetaRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <span className="text-xs uppercase tracking-wide text-muted-foreground">
-        {label}
-      </span>
-      <span className="text-sm font-medium text-foreground">{value}</span>
+        {/* Symptoms */}
+        <Card className="mb-6 bg-white dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="text-xl">Symptoms</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
+              {issue.symptoms.map((symptom, index) => (
+                <li key={index}>{symptom}</li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+
+        {/* Root Cause */}
+        <Card className="mb-6 bg-white dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="text-xl">Root Cause</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
+              {issue.root_cause.map((cause, index) => (
+                <li key={index}>{cause}</li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+
+        {/* Diagnosis */}
+        <Card className="mb-6 bg-white dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="text-xl">Diagnosis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
+              {issue.diagnosis.map((step, index) => (
+                <li key={index}>{step}</li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+
+        {/* Fix */}
+        <Card className="mb-6 bg-white dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="text-xl">Fix</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-gray-700 dark:text-gray-300">
+              {renderContent(issue.fix)}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Prevention */}
+        <Card className="mb-6 bg-white dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="text-xl">Prevention</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
+              {issue.prevention.map((tip, index) => (
+                <li key={index}>{tip}</li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -1,53 +1,49 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
-
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { cn } from "@/lib/utils";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Header } from "@/components/header";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
-  title: "DevOps AtlasX · Production issues and fixes",
-  description:
-    "A searchable atlas of real-world DevOps production issues, diagnostic playbooks and field-tested fixes.",
-  metadataBase: new URL("https://devops-atlasx.local"),
-  openGraph: {
-    title: "DevOps AtlasX",
-    description:
-      "Find real-world DevOps production issues and fixes instantly.",
-    type: "website",
-  },
+  title: "DevOps AtlasX - Real-world DevOps Production Issues and Fixes",
+  description: "Find real-world DevOps production issues and fixes instantly. A searchable platform for Docker, Kubernetes, AWS, Terraform, and CI/CD issues.",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          inter.variable,
-          mono.variable
-        )}
-      >
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
+    >
+      <body className="min-h-full flex flex-col">
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="relative flex min-h-screen flex-col">
-            <SiteHeader />
-            <main className="flex-1">{children}</main>
-            <SiteFooter />
-          </div>
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
         </ThemeProvider>
       </body>
     </html>
